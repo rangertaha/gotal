@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math"
 
-	"github.com/rangertaha/gota/types"
+	"github.com/rangertaha/gotal/types"
 )
 
 // Stochastic represents the Stochastic Oscillator indicator

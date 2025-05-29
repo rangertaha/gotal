@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/rangertaha/gota/patterns"
+	"github.com/rangertaha/gotal/patterns"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package indicators
 import (
 	"errors"
 
-	"github.com/rangertaha/gota/types"
+	"github.com/rangertaha/gotal/types"
 )
 
 // MovingAverage calculates the moving average of a price series

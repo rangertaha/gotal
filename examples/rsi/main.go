@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/rangertaha/gota/indicators"
+	"github.com/rangertaha/gotal/indicators"
 )
 
 func main() {

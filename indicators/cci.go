@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math"
 
-	"github.com/rangertaha/gota/types"
+	"github.com/rangertaha/gotal/types"
 )
 
 // CCI represents the Commodity Channel Index indicator

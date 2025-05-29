@@ -1,3 +1,3 @@
-module github.com/rangertaha/gota
+module github.com/rangertaha/gotal
 
 go 1.24.1

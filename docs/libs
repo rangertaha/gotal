@@ -1,0 +1,93 @@
+Here's a complete list of all 60+ candlestick pattern recognition functions provided by TA-Lib, along with a short description of what each one does.
+
+🕯️ TA-Lib Candlestick Pattern Functions (CDL*)
+Each of these functions returns:
+
++100 (or other positive value): Bullish pattern
+
+-100 (or other negative value): Bearish pattern
+
+0: No pattern detected
+
+✅ Reversal Patterns (Top/Bottom Turning Points)
+Function Name	Pattern Name	Type	Description
+CDL2CROWS	Two Crows	Bearish	Bearish reversal
+CDL3BLACKCROWS	Three Black Crows	Bearish	Strong reversal down
+CDL3INSIDE	Three Inside Up/Down	Both	Trend reversal
+CDL3LINESTRIKE	Three-Line Strike	Both	Reversal signal
+CDL3OUTSIDE	Three Outside Up/Down	Both	Strong reversal
+CDL3STARSINSOUTH	Three Stars In The South	Bullish	Rare reversal
+CDL3WHITESOLDIERS	Three White Soldiers	Bullish	Strong reversal up
+CDLABANDONEDBABY	Abandoned Baby	Both	Rare, reliable reversal
+CDLADVANCEBLOCK	Advance Block	Bearish	Weakening uptrend
+CDLBELTHOLD	Belt-hold	Both	Trend reversal
+CDLBREAKAWAY	Breakaway	Both	5-bar reversal
+CDLCLOSINGMARUBOZU	Closing Marubozu	Both	Strong candle
+CDLCONCEALBABYSWALL	Concealing Baby Swallow	Bullish	Rare pattern
+CDLCOUNTERATTACK	Counterattack	Both	Reversal after gap
+CDLDARKCLOUDCOVER	Dark Cloud Cover	Bearish	Reversal pattern
+CDLDOJI	Doji	Neutral	Indecision / reversal signal
+CDLDOJISTAR	Doji Star	Both	Potential reversal
+CDLDRAGONFLYDOJI	Dragonfly Doji	Bullish	Bottom reversal
+CDLENGULFING	Engulfing	Both	Strong reversal
+CDLEVENINGDOJISTAR	Evening Doji Star	Bearish	Strong top reversal
+CDLEVENINGSTAR	Evening Star	Bearish	Reversal pattern
+CDLGAPSIDESIDEWHITE	Side-by-Side White Lines	Bullish	Continuation or reversal
+CDLGRAVESTONEDOJI	Gravestone Doji	Bearish	Top reversal
+CDLHAMMER	Hammer	Bullish	Reversal after downtrend
+CDLHANGINGMAN	Hanging Man	Bearish	Reversal after uptrend
+CDLHARAMI	Harami	Both	Reversal signal
+CDLHARAMICROSS	Harami Cross	Both	Stronger harami
+CDLHIGHWAVE	High-Wave Candle	Indecision	Reversal or pause
+CDLHIKKAKE	Hikkake Pattern	Both	Reversal pattern
+CDLHIKKAKEMOD	Modified Hikkake	Both	Improved Hikkake
+CDLHOMINGPIGEON	Homing Pigeon	Bullish	Reversal in downtrend
+CDLIDENTICAL3CROWS	Identical Three Crows	Bearish	Strong reversal
+CDLINNECK	In-Neck Pattern	Bearish	Short reversal
+CDLINVERTEDHAMMER	Inverted Hammer	Bullish	Reversal after downtrend
+CDLKICKING	Kicking	Both	Strong reversal
+CDLKICKINGBYLENGTH	Kicking - By Length	Both	Strong version of kicking
+CDLLADDERBOTTOM	Ladder Bottom	Bullish	Reversal at low
+CDLLONGLEGGEDDOJI	Long Legged Doji	Indecision	Potential reversal
+CDLLONGLINE	Long Line Candle	Both	Strong single candle
+CDLMARUBOZU	Marubozu	Both	Strong sentiment
+CDLMATCHINGLOW	Matching Low	Bullish	Reversal bottom
+CDLMATHOLD	Mat Hold	Bullish	Continuation pattern
+CDLMORNINGDOJISTAR	Morning Doji Star	Bullish	Reversal pattern
+CDLMORNINGSTAR	Morning Star	Bullish	Strong reversal bottom
+CDLONNECK	On-Neck Pattern	Bearish	Short reversal
+CDLPIERCING	Piercing Line	Bullish	Reversal pattern
+CDLRICKSHAWMAN	Rickshaw Man	Indecision	Doji with long wicks
+CDLRISEFALL3METHODS	Rising/Falling Three Methods	Continuation	Trend continuation
+CDLSEPARATINGLINES	Separating Lines	Continuation	Confirms trend
+CDLSHOOTINGSTAR	Shooting Star	Bearish	Reversal after uptrend
+CDLSHORTLINE	Short Line Candle	Indecision	Weak signal
+CDLSPINNINGTOP	Spinning Top	Indecision	Market balance
+CDLSTALLEDPATTERN	Stalled Pattern	Bearish	Reversal warning
+CDLSTICKSANDWICH	Stick Sandwich	Bullish	Reversal pattern
+CDLTAKURI	Takuri Line	Bullish	Rare bottom pattern
+CDLTASUKIGAP	Tasuki Gap	Continuation	Trend continuation
+CDLTHRUSTING	Thrusting Pattern	Bearish	Mild reversal
+CDLTRISTAR	Tristar Pattern	Both	Reversal
+CDLUNIQUE3RIVER	Unique Three River	Bullish	Reversal bottom
+CDLUPSIDEGAP2CROWS	Upside Gap Two Crows	Bearish	Reversal
+CDLXSIDEGAP3METHODS	Side Gap Three Methods	Continuation	Trend continuation
+
+🧠 How to Use
+python
+Copy
+Edit
+import talib
+
+# Example usage with candlestick data (numpy arrays)
+pattern = talib.CDLENGULFING(open, high, low, close)
+
+# pattern contains +100 (bullish), -100 (bearish), or 0 (no pattern)
+
+
+# Pattern Values
+- +100: Bullish pattern detected
+- -100: Bearish pattern detected
+- 0: No pattern detected
+
+# Common Usage

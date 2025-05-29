@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/rangertaha/gota/indicators"
-	"github.com/rangertaha/gota/types"
+	"github.com/rangertaha/gotal/indicators"
+	"github.com/rangertaha/gotal/types"
 )
 
 func main() {

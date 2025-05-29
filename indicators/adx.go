@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math"
 
-	"github.com/rangertaha/gota/types"
+	"github.com/rangertaha/gotal/types"
 )
 
 // ADX represents the Average Directional Index indicator

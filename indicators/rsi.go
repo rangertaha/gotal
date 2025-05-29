@@ -3,7 +3,7 @@ package indicators
 import (
 	"errors"
 
-	"github.com/rangertaha/gota/types"
+	"github.com/rangertaha/gotal/types"
 )
 
 // RSI represents the Relative Strength Index indicator

@@ -3,7 +3,7 @@ package indicators
 import (
 	"errors"
 
-	"github.com/rangertaha/gota/types"
+	"github.com/rangertaha/gotal/types"
 )
 
 // OBV represents the On-Balance Volume indicator
