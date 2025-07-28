@@ -1,16 +1,6 @@
 # Gotal - Golang Technical Analysis Library
 
-Gotal is a comprehensive technical analysis library for Go, inspired by TA-Lib. It provides a wide range of technical analysis functions for financial market data.
-
-## Features (Planned)
-
-- Price Transform Functions
-- Momentum Indicators
-- Volume Indicators
-- Volatility Indicators
-- Trend Indicators
-- Pattern Recognition
-- Statistical Functions
+Gotal is a technical analysis library for Go, inspired by TA-Lib. It provides a wide range of technical analysis functions for financial market data.
 
 ## Installation
 
@@ -24,7 +14,7 @@ go get github.com/rangertaha/gotal
 package main
 
 import (
-    "github.com/rangertaha/gotal"
+    "github.com/rangertaha/gotal"   
 )
 
 func main() {
