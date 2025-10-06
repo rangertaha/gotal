@@ -60,16 +60,3 @@ gotal/
    - Support/Resistance Detection
 
 ~/
-
-====~/.////~~~~/~112
-============================+++++~~~~~~~~~~~~~~~~~~======ZZZZZZ
-
-
-483E25B583CE1CA1D07581A635EDAE24
-CCCCCCEEGGTITULJINGGEJKVEBBBRUHTBVTUDUTLUNUT
-
-
-483e
-
-25b5
-83ce1ca1d07581a635edae24
