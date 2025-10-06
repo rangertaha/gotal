@@ -58,5 +58,3 @@ gotal/
    - Candlestick Patterns
    - Chart Patterns
    - Support/Resistance Detection
-
-~/
