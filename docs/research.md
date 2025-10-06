@@ -1,2 +1,0 @@
-what are alpha factors 
-

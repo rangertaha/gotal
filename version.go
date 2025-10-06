@@ -14,9 +14,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gotal
 
+import "fmt"
+
 const (
 	// VERSION format is loosely based on
 	// [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 	VERSION = "0.0.0"
-
 )
+
+// Init initializes the gotal library
+func Init() {
+	fmt.Println("Initializing gotal library")
+}

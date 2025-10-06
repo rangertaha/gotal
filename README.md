@@ -1,6 +1,13 @@
 # Gotal - Golang Technical Analysis Library
 
-Gotal is a technical analysis library for Go, inspired by TA-Lib. It provides a wide range of technical analysis functions for financial market data.
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/rangertaha/gotal?style=flat-square)](https://goreportcard.com/report/github.com/rangertaha/gotal) [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/rangertaha/gotal) [![PkgGoDev](https://pkg.go.dev/badge/github.com/rangertaha/gotal)](https://pkg.go.dev/github.com/rangertaha/gotal) [![Release](https://img.shields.io/github/release/rangertaha/gotal.svg?style=flat-square)](https://github.com/rangertaha/gotal/releases/latest)
+
+
+
+
+Gotal is a technical analysis library for Go, inspired by TA-Lib. It provides a wide range of technical analysis functions.
+
 
 ## Installation
 
@@ -22,23 +29,14 @@ func main() {
 }
 ```
 
-## Project Structure
+## Structure
 
-```
+```sh
 gotal/
-├── indicators/     # Technical indicators
-├── patterns/       # Pattern recognition
-├── utils/          # Utility functions
-└── examples/       # Usage examples
+├── ta/     # Technical analysis functions
 ```
 
-## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Roadmap
 
@@ -61,4 +59,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
    - Chart Patterns
    - Support/Resistance Detection
 
+~/
 
+====~/.////~~~~/~112
+============================+++++~~~~~~~~~~~~~~~~~~======ZZZZZZ
+
+
+483E25B583CE1CA1D07581A635EDAE24
+CCCCCCEEGGTITULJINGGEJKVEBBBRUHTBVTUDUTLUNUT
+
+
+483e
+
+25b5
+83ce1ca1d07581a635edae24
