@@ -20,5 +20,8 @@ deps: ## Install dependencies
 test: deps ## Run unit test
 	$(GOTEST) -v ./...
 
+build: deps ## Build the gota cli tool
+	$(GOBUILD) -o gota cmd/gota/gota.go
+
 doc: ## Go documentation
 	godoc -http=:6060
