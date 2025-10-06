@@ -158,20 +158,21 @@ func main() {
 	cli.AppHelpTemplate = fmt.Sprintf(`%s
 EXAMPLE:
 
-	trader create myproject
+	gota init
 
-    trader fill -p polygon -d 1m -s 2025-01-01 
+    gota create myproject
 
-    trader train -s 2025-01-01 -e 2025-01-02
-    trader test -s 2025-01-01 -e 2025-01-02
-    trader live -s 2025-01-01 -e 2025-01-02
-    trader exec -s 2025-01-01 -e 2025-01-02
+    gota fill -p polygon -d 1m -s 2025-01-01 
+
+    gota train -s 2025-01-01 -e 2025-01-02
+    gota test -s 2025-01-01 -e 2025-01-02
+    gota live -s 2025-01-01 -e 2025-01-02
+    gota exec -s 2025-01-01 -e 2025-01-02
 
 AUTHOR:
    Rangertaha (rangertaha@gmail.com)
-
-     
-     `, cli.AppHelpTemplate)
+   
+`, cli.AppHelpTemplate)
 
 	cli.VersionFlag = &cli.BoolFlag{
 		Name:    "version",
@@ -185,8 +186,8 @@ AUTHOR:
 		Compiled:    time.Now(),
 		Suggest:     true,
 		HelpName:    "gota",
-		Usage:       "creating, training, testing, and running trading bots",
-		Description: internal.Banner(),
+		Usage:       "Used to create, train, test, and run financial trading bots",
+		Description: "A framework for creating, training, testing, and running financial trading bots based on gotal (Go Technical Analysis Library).",
 		UsageText:   "gota [global opts..] [command] [opts..]",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
@@ -199,6 +200,7 @@ AUTHOR:
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+
 			cli.ShowAppHelpAndExit(ctx, 0)
 			return nil
 		},
