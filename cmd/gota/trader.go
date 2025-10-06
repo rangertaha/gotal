@@ -21,7 +21,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/rangertaha/gotal"
+	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/trader"
 	"github.com/urfave/cli/v2"
 )
@@ -180,14 +180,14 @@ AUTHOR:
 	}
 
 	app := &cli.App{
-		Name:        "trader",
-		Version:     gotal.VERSION,
+		Name:        "gota",
+		Version:     internal.VERSION,
 		Compiled:    time.Now(),
 		Suggest:     true,
-		HelpName:    "trader",
+		HelpName:    "gota",
 		Usage:       "creating, training, testing, and running trading bots",
-		Description: "",
-		UsageText:   "trader [global opts..] [command] [opts..]",
+		Description: internal.Banner(),
+		UsageText:   "gota [global opts..] [command] [opts..]",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  "debug",

@@ -4,7 +4,7 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
-VERSION=$(shell grep -e 'VERSION = ".*"' version.go | cut -d= -f2 | sed  s/[[:space:]]*\"//g)
+VERSION=$(shell grep -e 'VERSION = ".*"' internal/version.go | cut -d= -f2 | sed  s/[[:space:]]*\"//g)
 
 .PHONY: help version deps test doc
 
