@@ -27,16 +27,16 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsimple"
 	"github.com/nats-io/nats.go"
-	"github.com/rangertaha/hxe/internal"
-	"github.com/rangertaha/hxe/internal/db"
-	"github.com/rangertaha/hxe/internal/log"
+	"github.com/rangertaha/gotal/internal"
+	"github.com/rangertaha/gotal/internal/db"
+	"github.com/rangertaha/gotal/internal/log"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	_ "embed"
 
 	"github.com/rs/zerolog"
-	"github.com/urfave/cli/v3"
+	"github.com/urfave/cli/v2"
 )
 
 const (

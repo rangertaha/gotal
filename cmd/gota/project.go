@@ -18,54 +18,49 @@ package main
 import (
 	"fmt"
 
+	"github.com/rangertaha/gotal/internal"
+	"github.com/rangertaha/gotal/internal/trader"
+
 	"github.com/urfave/cli/v2"
 )
 
 var InitCmd = cli.Command{
 	Name:                   "init",
-	// Aliases:                []string{"p"},
-	Usage:                  "Initialize user config directory",
+	Usage:                  "Initialize user configs",
 	Description:            "Initialize and create user config directory",
-	UsageText:              "trader [g opts..] init",
+	UsageText:              "gota [g opts..] init",
 	UseShortOptionHandling: true,
-	// Flags:                  Flags,
 	Action: func(cCtx *cli.Context) error {
-		cli.ShowSubcommandHelpAndExit(cCtx, 1)
+		trader.Init(cCtx.String("path"))
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
 EXAMPLE:
-
-    trader create myproject
+   %s init 
+   %s init project/path
  
-
 AUTHOR:
    Rangertaha (rangertaha@gmail.com)
-     
-     `, cli.SubcommandHelpTemplate),
+
+`, cli.SubcommandHelpTemplate, internal.CLI, internal.CLI),
 }
 
-
-var CreateCmd = cli.Command{
-	Name:                   "create",
-	// Aliases:                []string{"p"},
+var NewCmd = cli.Command{
+	Name:                   "new",
 	Usage:                  "Create a new project directory",
 	Description:            "Create a new project directory",
-	UsageText:              "trader [g opts..] create [opts..] [name]",
+	UsageText:              "gota [g opts..] new [opts..] [dirname]",
 	UseShortOptionHandling: true,
-	// Flags:                  Flags,
 	Action: func(cCtx *cli.Context) error {
 		cli.ShowSubcommandHelpAndExit(cCtx, 1)
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
 EXAMPLE:
-
-    trader create myproject
+   %s new myproject
  
-
 AUTHOR:
    Rangertaha (rangertaha@gmail.com)
      
-     `, cli.SubcommandHelpTemplate),
+`, cli.SubcommandHelpTemplate, internal.CLI),
 }

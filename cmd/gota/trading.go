@@ -17,8 +17,6 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"time"
 
 	"github.com/rangertaha/gotal/internal"
@@ -43,7 +41,7 @@ var Flags = []cli.Flag{
 	},
 }
 
-var BackfillFlags = append(Flags, &cli.StringFlag{
+var FillFlags = append(Flags, &cli.StringFlag{
 	Name:    "provider",
 	Usage:   "data provider to use",
 	Aliases: []string{"p"},
@@ -55,16 +53,15 @@ var BackfillFlags = append(Flags, &cli.StringFlag{
 	Value:   time.Duration(1 * time.Minute),
 })
 
-var BackfillCmd = cli.Command{
-	Name: "fill",
-	// Aliases:                []string{"bf", "fill"},
+var FillCmd = cli.Command{
+	Name:                   "fill",
+	Category:               "trading",
 	Usage:                  "Download historical prices and metadata",
 	Description:            "Backfill historical prices and metadata from registered data providers",
-	UsageText:              "trader fill [opts..]",
+	UsageText:              fmt.Sprintf(`%s [g opts..] fill [opts..]`, internal.CLI),
 	UseShortOptionHandling: true,
-	Flags:                  BackfillFlags,
+	Flags:                  FillFlags,
 	Action: func(cCtx *cli.Context) error {
-		// cli.ShowSubcommandHelpAndExit(cCtx, 1)
 		start := cCtx.Timestamp("start")
 		end := cCtx.Timestamp("end")
 		duration := cCtx.Duration("duration")
@@ -76,146 +73,123 @@ var BackfillCmd = cli.Command{
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
-	
-	EXAMPLE:
-
-    trader fill -p polygon -d 1m -s 2025-01-01 -e 2025-01-02 
-
-    trader fill -p polygon -d 1m -s 2025-01-01 -e 2025-01-02
-
-    trader fill -p polygon -d 1m -s 2025-01-01 -e 2025-01-02
-
-    trader fill -p polygon -d 1m -s 2025-01-01 -e 2025-01-02
- 
+EXAMPLE:
+   %s fill -p polygon -d 1m -s 2025-01-01 -e 2025-01-02 
 
 AUTHOR:
    Rangertaha (rangertaha@gmail.com)
-     
-     `, cli.SubcommandHelpTemplate),
+
+`, cli.SubcommandHelpTemplate, internal.CLI),
 }
 
 var TrainCmd = cli.Command{
-	Name: "train",
-	// Aliases:                []string{"trn"},
-	Usage:                  "Train a new model",
-	Description:            "Train a new model",
-	UsageText:              "trader [g opts..] train [opts..] [name]",
+	Name:                   "train",
+	Category:               "trading",
+	Usage:                  "Train the strategy with historical prices",
+	Description:            "Train the strategy with historical prices",
+	UsageText:              fmt.Sprintf(`%s [g opts..] train [opts..]`, internal.CLI),
 	UseShortOptionHandling: true,
 	Flags:                  Flags,
 	Action: func(cCtx *cli.Context) error {
 		start := cCtx.Timestamp("start")
 		end := cCtx.Timestamp("end")
+
+		// Train a new model
 		if err := trader.Train(*start, *end); err != nil {
 			return err
 		}
 		return nil
 	},
-}
-
-var TestCmd = cli.Command{
-	Name: "test",
-	// Aliases:                []string{"tst"},
-	Usage:                  "Test a new model",
-	Description:            "Test a new model",
-	UsageText:              "trader [g opts..] test [opts..] [name]",
-	UseShortOptionHandling: true,
-	Flags:                  Flags,
-	Action: func(cCtx *cli.Context) error {
-		cli.ShowSubcommandHelpAndExit(cCtx, 1)
-		return nil
-	},
-}
-
-var LiveCmd = cli.Command{
-	Name: "live",
-	// Aliases:                []string{"l"},
-	Usage:                  "Live trade a new model",
-	Description:            "Live trade a new model",
-	UsageText:              "trader [g opts..] live [opts..] [name]",
-	UseShortOptionHandling: true,
-	Flags:                  Flags,
-	Action: func(cCtx *cli.Context) error {
-		cli.ShowSubcommandHelpAndExit(cCtx, 1)
-		return nil
-	},
-}
-
-var ExecCmd = cli.Command{
-	Name: "exec",
-	// Aliases:                []string{"e", "run"},
-	Usage:                  "Execute a new model",
-	Description:            "Execute a new model",
-	UsageText:              "trader [g opts..] exec [opts..] [name]",
-	UseShortOptionHandling: true,
-	Flags:                  Flags,
-	Action: func(cCtx *cli.Context) error {
-		cli.ShowSubcommandHelpAndExit(cCtx, 1)
-		return nil
-	},
-}
-
-func main() {
-	cli.AppHelpTemplate = fmt.Sprintf(`%s
+	CustomHelpTemplate: fmt.Sprintf(`%s
 EXAMPLE:
-
-	gota init
-
-    gota create myproject
-
-    gota fill -p polygon -d 1m -s 2025-01-01 
-
-    gota train -s 2025-01-01 -e 2025-01-02
-    gota test -s 2025-01-01 -e 2025-01-02
-    gota live -s 2025-01-01 -e 2025-01-02
-    gota exec -s 2025-01-01 -e 2025-01-02
+   %s train -s 2025-01-01 -e 2025-01-02 
 
 AUTHOR:
    Rangertaha (rangertaha@gmail.com)
-   
-`, cli.AppHelpTemplate)
 
-	cli.VersionFlag = &cli.BoolFlag{
-		Name:    "version",
-		Aliases: []string{"V"},
-		Usage:   "print the version",
-	}
+`, cli.SubcommandHelpTemplate, internal.CLI),
+}
 
-	app := &cli.App{
-		Name:        "gota",
-		Version:     internal.VERSION,
-		Compiled:    time.Now(),
-		Suggest:     true,
-		HelpName:    "gota",
-		Usage:       "Used to create, train, test, and run financial trading bots",
-		Description: "A framework for creating, training, testing, and running financial trading bots based on gotal (Go Technical Analysis Library).",
-		UsageText:   "gota [global opts..] [command] [opts..]",
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:  "debug",
-				Value: false,
-				Usage: "Log debug messags for development",
-				Action: func(ctx *cli.Context, v bool) error {
-					return nil
-				},
-			},
-		},
-		Action: func(ctx *cli.Context) error {
+var TestCmd = cli.Command{
+	Name:                   "test",
+	Category:               "trading",
+	Usage:                  "Test the strategy with historical prices",
+	Description:            "Test the strategy with historical prices",
+	UsageText:              fmt.Sprintf(`%s [g opts..] test [opts..]`, internal.CLI),
+	UseShortOptionHandling: true,
+	Flags:                  Flags,
+	Action: func(cCtx *cli.Context) error {
+		start := cCtx.Timestamp("start")
+		end := cCtx.Timestamp("end")
 
-			cli.ShowAppHelpAndExit(ctx, 0)
-			return nil
-		},
-		Commands: []*cli.Command{
-			&InitCmd,
-			&CreateCmd,
-			&BackfillCmd,
-			&TrainCmd,
-			&TestCmd,
-			&LiveCmd,
-			&ExecCmd,
-		},
-	}
+		// Test trading
+		if err := trader.Test(*start, *end); err != nil {
+			return err
+		}
+		return nil
+	},
+	CustomHelpTemplate: fmt.Sprintf(`%s
+EXAMPLE:
+   %s test -s 2025-01-01 -e 2025-01-02 
 
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
-	}
+AUTHOR:
+   Rangertaha (rangertaha@gmail.com)
+     
+`, cli.SubcommandHelpTemplate, internal.CLI),
+}
+
+var LiveCmd = cli.Command{
+	Name:                   "live",
+	Category:               "trading",
+	Usage:                  "Live trading with fake money",
+	Description:            "Live trading with fake money",
+	UsageText:              fmt.Sprintf(`%s [g opts..] live [opts..]`, internal.CLI),
+	UseShortOptionHandling: true,
+	Flags:                  Flags,
+	Action: func(cCtx *cli.Context) error {
+		start := cCtx.Timestamp("start")
+		end := cCtx.Timestamp("end")
+
+		// Live trading
+		if err := trader.Live(*start, *end); err != nil {
+			return err
+		}
+		return nil
+	},
+	CustomHelpTemplate: fmt.Sprintf(`%s
+EXAMPLE:
+   %s live -s 2025-01-01 -e 2025-01-02 
+
+AUTHOR:
+   Rangertaha (rangertaha@gmail.com)
+     
+`, cli.SubcommandHelpTemplate, internal.CLI),
+}
+
+var ExecCmd = cli.Command{
+	Name:                   "exec",
+	Category:               "trading",
+	Usage:                  "Execute live trading with real money",
+	Description:            "Execute live trading with real money",
+	UsageText:              fmt.Sprintf(`%s [g opts..] exec [opts..]`, internal.CLI),
+	UseShortOptionHandling: true,
+	Flags:                  Flags,
+	Action: func(cCtx *cli.Context) error {
+		start := cCtx.Timestamp("start")
+		end := cCtx.Timestamp("end")
+
+		// Execute a new model
+		if err := trader.Exec(*start, *end); err != nil {
+			return err
+		}
+		return nil
+	},
+	CustomHelpTemplate: fmt.Sprintf(`%s
+EXAMPLE:
+   %s exec -s 2025-01-01 -e 2025-01-02 
+ 
+AUTHOR:
+   Rangertaha (rangertaha@gmail.com)
+     
+`, cli.SubcommandHelpTemplate, internal.CLI),
 }

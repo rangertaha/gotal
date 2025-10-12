@@ -11,9 +11,13 @@ func Load(opts ...func(t *trader)) internal.Trader {
 	return trader
 }
 
-func Backfill(start, end time.Time, duration time.Duration, provider string, opts ...func(t *trader)) error {
+func Init(paths ...string) error {
+	return nil
+}
+
+func Fill(start, end time.Time, duration time.Duration, provider string, opts ...func(t *trader)) error {
 	trader := Load(opts...)
-	return trader.Backfill(start, end, duration, provider)
+	return trader.Fill(start, end, duration, provider)
 }
 
 func Train(start, end time.Time, opts ...func(t *trader)) error {

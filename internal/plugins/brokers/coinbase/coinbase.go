@@ -1,40 +1,41 @@
-package macd
+package coinbase
 
 import (
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/pkg/opt"
 	"github.com/rangertaha/gotal/internal/pkg/series"
 	"github.com/rangertaha/gotal/internal/pkg/tick"
-	"github.com/rangertaha/gotal/internal/plugins/strategies"
+	"github.com/rangertaha/gotal/internal/plugins/brokers"
 )
 
-type macd struct {
+type coinbase struct {
 	Name  string `hcl:"name,optional"`  // name of the data series
 	Input string `hcl:"input,optional"` // field to compute the MACD on
+
 }
 
-func New(opts ...internal.OptFunc) *macd {
+func New(opts ...internal.OptFunc) *coinbase {
 	cfg := opt.New(opts...)
 
-	return &macd{
+	return &coinbase{
 		Name:  cfg.Name("macd"),
 		Input: cfg.Field("value"),
 	}
 }
 
-func (i *macd) Compute(input *series.Series) (output *series.Series) {
+func (i *coinbase) Compute(input *series.Series) (output *series.Series) {
+	output = series.New(i.Name)
 
 	return
 }
 
-func (i *macd) Process(input *tick.Tick) (output *tick.Tick) {
+func (i *coinbase) Process(input *tick.Tick) (output *tick.Tick) {
 
 	return
 }
 
 func init() {
-	strategies.Add("macd", func(opts ...internal.OptFunc) internal.Strategy {
+	brokers.Add("coinbase", func(opts ...internal.OptFunc) internal.Broker {
 		return New(opts...)
 	})
-
 }

@@ -78,11 +78,24 @@ type Broker interface {
 type Storage interface {
 }
 
-// Trader is the interface for the trader workflow
+// Trader is the trading workflow
 type Trader interface {
-	Backfill(start, end time.Time, duration time.Duration, provider string) error // backfill historical prices from data providers
-	Train(start, end time.Time) error                                             // train the strategy model and save it to storage
-	Test(start, end time.Time) error                                              // test the trained model and return the results
-	Live(start, end time.Time) error                                                    // live testing with real data and mock broker
-	Exec(start, end time.Time) error                                                    // execute with real data and real broker 
+	Init(paths ...string) error
+	Fill(start, end time.Time, duration time.Duration, provider string) error // backfill historical prices from data providers
+	Train(start, end time.Time) error                                         // train the strategy model and save it to storage
+	Test(start, end time.Time) error                                          // test the trained model and return the results
+	Live(start, end time.Time) error                                          // live testing with real data and mock broker
+	Exec(start, end time.Time) error                                          // execute with real data and real broker
+}
+
+type Node interface {
+	ID() string
+	Name() string
+	Description() string
+	Schema() any
+
+	// lifecycle
+	Init() error
+	Run() error
+	Stop() error
 }

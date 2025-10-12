@@ -1,15 +1,11 @@
 package trader
 
 import (
-	"embed"
 	"fmt"
 	"time"
 
 	"github.com/rangertaha/gotal/internal"
 )
-
-//go:embed all:project
-var projectAssets embed.FS
 
 func New(opts ...func(t *trader)) internal.Trader {
 	t := &trader{
@@ -42,8 +38,14 @@ type trader struct {
 	indicators []internal.Indicator
 }
 
-func (t *trader) Backfill(start, end time.Time, duration time.Duration, provider string) error {
-	fmt.Println("Backfill data from", start, "to", end, "duration", duration, "provider", provider)
+func (t *trader) Init(paths ...string) error {
+	fmt.Println("Initializing trader with paths", paths)
+	return nil
+}
+
+func (t *trader) Fill(start, end time.Time, duration time.Duration, provider string) error {
+	fmt.Println("Fill data from", start, "to", end, "duration", duration, "provider", provider)
+
 	return nil
 }
 

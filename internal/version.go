@@ -19,6 +19,7 @@ import "fmt"
 
 const (
 	NAME = "gotal"
+	CLI = "gota"
 	VERSION = "0.0.0"
 	COMPILED = "2025-06-27"
 	COMMIT = "35a7441"
