@@ -1,0 +1,22 @@
+package vec
+
+import (
+	"fmt"
+	"vlib"
+)
+
+func testMe() {
+	// 2D Example
+	v1 := vlib.Vec2[float64]{3, 4}
+	fmt.Println("v1 length:", v1.Len())
+
+	// 3D Example
+	a := vlib.Vec3[float64]{1, 0, 0}
+	b := vlib.Vec3[float64]{0, 1, 0}
+	fmt.Println("a × b =", a.Cross(b))
+
+	// N-D Example
+	n1 := vlib.VecN[float64]{1, 2, 3}
+	n2 := vlib.VecN[float64]{4, 5, 6}
+	fmt.Println("n1 ⋅ n2 =", n1.Dot(n2))
+}
