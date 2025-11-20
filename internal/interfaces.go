@@ -9,8 +9,10 @@ import (
 )
 
 type Options interface {
-	// Primitive objects
+	// Setters
 	Set(key string, value any)
+
+	// Getters
 	Get(key string, defaults ...any) any
 	GetInt(key string, defaults ...any) int
 	GetString(key string, defaults ...any) string
@@ -31,6 +33,7 @@ type Options interface {
 	Field(s ...any) string
 	Fields(s ...any) []string
 	Output(s ...any) string
+	Duration(s ...any) time.Duration
 }
 
 type OptFunc func(Options)
@@ -67,21 +70,29 @@ type SeriesFunc func(*series.Series, ...OptFunc) *series.Series
 type StreamFunc func(*stream.Stream, ...OptFunc) *stream.Stream
 
 type Strategy interface {
+	Process(*tick.Tick) *tick.Tick
+	Compute(*series.Series) *series.Series
 }
 
 type Provider interface {
+	Process(*tick.Tick) *tick.Tick
+	Compute(*series.Series) *series.Series
 }
 
 type Broker interface {
+	Process(*tick.Tick) *tick.Tick
+	Compute(*series.Series) *series.Series
 }
 
 type Storage interface {
+	Process(*tick.Tick) *tick.Tick
+	Compute(*series.Series) *series.Series
 }
 
 // Trader is the trading workflow
 type Trader interface {
 	Init(paths ...string) error
-	Fill(start, end time.Time, duration time.Duration, provider string) error // backfill historical prices from data providers
+	Fill(start, end time.Time, duration time.Duration, providers string) error // backfill historical prices from data providers
 	Train(start, end time.Time) error                                         // train the strategy model and save it to storage
 	Test(start, end time.Time) error                                          // test the trained model and return the results
 	Live(start, end time.Time) error                                          // live testing with real data and mock broker

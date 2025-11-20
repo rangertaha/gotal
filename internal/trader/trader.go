@@ -7,7 +7,7 @@ import (
 	"github.com/rangertaha/gotal/internal"
 )
 
-func New(opts ...func(t *trader)) internal.Trader {
+func New(opts ...func(t *trader)) (internal.Trader, error) {
 	t := &trader{
 		// asset
 		asset: "",
@@ -24,7 +24,7 @@ func New(opts ...func(t *trader)) internal.Trader {
 		opt(t)
 	}
 
-	return t
+	return t, nil
 }
 
 type trader struct {
@@ -40,11 +40,12 @@ type trader struct {
 
 func (t *trader) Init(paths ...string) error {
 	fmt.Println("Initializing trader with paths", paths)
+
 	return nil
 }
 
 func (t *trader) Fill(start, end time.Time, duration time.Duration, provider string) error {
-	fmt.Println("Fill data from", start, "to", end, "duration", duration, "provider", provider)
+	fmt.Println("Fill data from", start, "to", end, "duration", duration, "providers", provider)
 
 	return nil
 }

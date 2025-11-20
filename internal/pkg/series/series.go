@@ -1,7 +1,6 @@
 package series
 
 import (
-	"sort"
 	"time"
 
 	"github.com/rangertaha/gotal/internal/pkg/tick"
@@ -13,7 +12,10 @@ type Series struct {
 	ticks []*tick.Tick
 
 	// metadata
-	tags map[string]string
+	tags     map[string]string
+	parent   *Series   // experimental
+	children []*Series // experimental
+
 }
 
 // NewSeries creates a new Series of ticks
@@ -64,6 +66,13 @@ func (s *Series) Timestamp() time.Time {
 		return time.Time{}
 	}
 	return s.ticks[len(s.ticks)-1].Timestamp()
+}
+
+func (s *Series) TimeRange() (time.Time, time.Time) {
+	if len(s.ticks) == 0 {
+		return time.Time{}, time.Time{}
+	}
+	return s.ticks[0].Timestamp(), s.ticks[len(s.ticks)-1].Timestamp()
 }
 
 func (s *Series) Timestamps() (out []time.Time) {
@@ -168,6 +177,15 @@ func (s *Series) At(index int) *tick.Tick {
 	return s.ticks[index]
 }
 
+func (s *Series) AtTime(timestamp time.Time) *tick.Tick {
+	for _, tick := range s.ticks {
+		if tick.Timestamp().Equal(timestamp) {
+			return tick
+		}
+	}
+	return nil
+}
+
 // Pop returns the last tick and removes it from the Series collection.
 func (s *Series) Pop() *tick.Tick {
 	last := s.At(s.Len() - 1)
@@ -217,9 +235,18 @@ func (s *Series) update() {
 	}
 }
 
-func Sort(ticks []*tick.Tick) []*tick.Tick {
-	sort.Slice(ticks, func(i, j int) bool {
-		return ticks[i].Timestamp().Before(ticks[j].Timestamp())
-	})
-	return ticks
+func (s *Series) Spawn(opts ...SeriesOptions) *Series {
+	series := &Series{
+		name:   s.name,
+		ticks:  make([]*tick.Tick, 0),
+		tags:   s.tags,
+		parent: s,
+	}
+
+	for _, opt := range opts {
+		opt(series)
+	}
+
+	s.children = append(s.children, series)
+	return series
 }

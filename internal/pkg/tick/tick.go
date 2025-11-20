@@ -7,27 +7,41 @@ import (
 	"github.com/rangertaha/gotal/internal/pkg/sig"
 )
 
+type IDFunc func(t *Tick) string
+
 // Tick represents a single market event, capturing the most granular form of market data.
 type Tick struct {
-	uuid      string             // The unique identifier for the tick
-	timestamp time.Time          // The time at which the tick was recorded
-	duration  time.Duration      // The duration of the tick, typically very short
-	fields    map[string]float64 // The numerical fields
-	tags      map[string]string  // The classification tags, e.g. market, symbol, exchange, currency, etc.
+	uuid      string                      // The unique identifier for the tick
+	timestamp time.Time                   // The time at which the tick was recorded
+	duration  time.Duration               // The duration of the tick, typically very short
+	fields    map[string]float64          // The numerical fields
+	tags      map[string]string           // The classification tags, e.g. market, symbol, exchange, currency, etc.
 	signals   map[sig.Signal]sig.Strength // The signals, e.g. buy, sell, etc.
+	idFunc    IDFunc
 }
 
 func New(opts ...TickOptions) *Tick {
 	tick := &Tick{
+		uuid:      "",
 		timestamp: time.Now(),
 		duration:  0,
 		fields:    map[string]float64{},
 		tags:      map[string]string{},
 		signals:   map[sig.Signal]sig.Strength{},
+		idFunc:    nil,
 	}
 	for _, opt := range opts {
 		opt(tick)
 	}
+
+	if tick.idFunc == nil {
+		tick.SetIDFunc(func(t *Tick) string {
+			return t.uuid
+		})
+	}
+
+	tick.SetID(tick.idFunc(tick))
+
 	return tick
 }
 
@@ -39,12 +53,18 @@ func (t *Tick) SetID(id string) {
 	t.uuid = id
 }
 
+func (t *Tick) SetIDFunc(idFunc IDFunc) {
+	t.idFunc = idFunc
+}
+
 func (t *Tick) Timestamp() time.Time {
 	return t.timestamp
 }
 
 func (t *Tick) SetTimestamp(timestamp time.Time) {
 	t.timestamp = timestamp
+
+	// Truncate the timestamp to the duration
 	if t.duration > 0 {
 		t.timestamp = t.timestamp.Truncate(t.duration)
 	}
@@ -56,6 +76,8 @@ func (t *Tick) Duration() time.Duration {
 
 func (t *Tick) SetDuration(duration time.Duration) {
 	t.duration = duration
+
+	// Truncate the timestamp to the duration
 	if duration > 0 {
 		t.timestamp = t.timestamp.Truncate(duration)
 	}
@@ -124,9 +146,9 @@ func (t *Tick) Reset() {
 	t.fields = map[string]float64{}
 }
 
-func (t *Tick) ForEach(fn func(key string, value float64)) {
+func (t *Tick) ForEach(fn func(key string, value float64) float64) {
 	for k, v := range t.fields {
-		fn(k, v)
+		t.fields[k] = fn(k, v)
 	}
 }
 
@@ -245,6 +267,28 @@ func (t *Tick) Update(other *Tick) *Tick {
 	t.SetTimestamp(other.timestamp)
 	t.SetDuration(other.duration)
 	t.SetID(other.uuid)
+	t.SetIDFunc(other.idFunc)
+
+	// update the uuid
+	t.SetID(t.idFunc(t))
 
 	return t
+}
+
+func (t *Tick) Spawn(opts ...TickOptions) *Tick {
+	tick := &Tick{
+		uuid:      t.uuid,
+		timestamp: t.timestamp.Add(t.duration),
+		duration:  t.duration,
+		fields:    map[string]float64{},
+		tags:      t.tags,
+		signals:   map[sig.Signal]sig.Strength{},
+		idFunc:    t.idFunc,
+	}
+	for _, opt := range opts {
+		opt(tick)
+	}
+	tick.SetID(tick.idFunc(tick))
+
+	return tick
 }

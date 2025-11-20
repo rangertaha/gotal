@@ -1,6 +1,8 @@
 package series
 
 import (
+	"time"
+
 	"github.com/rangertaha/gotal/internal/pkg/tick"
 )
 
@@ -32,13 +34,18 @@ func WithTicks(ticks ...*tick.Tick) SeriesOptions {
 	return func(s *Series) { s.ticks = ticks }
 }
 
-// func From(series *Series) SeriesOptions {
-// 	return func(s *Series) {
-// 		s.name = series.name
-// 		s.duration = series.duration
-// 		s.ticks = series.ticks
-// 		s.meta = series.meta
-// 		s.defaultField = series.defaultField
-// 		s.tags = series.tags
-// 	}
-// }
+func WithFields(fields []map[string]float64) SeriesOptions {
+	return func(s *Series) {
+		for _, field := range fields {
+			tick := tick.New()
+			for k, v := range field {
+				if k == "time" {
+					tick.SetTimestamp(time.Unix(int64(v), 0))
+				} else {
+					tick.SetField(k, v)
+				}
+			}
+			s.Add(tick)
+		}
+	}
+}

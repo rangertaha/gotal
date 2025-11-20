@@ -67,7 +67,7 @@ var FillCmd = cli.Command{
 		duration := cCtx.Duration("duration")
 		provider := cCtx.String("provider")
 
-		if err := trader.Backfill(*start, *end, duration, provider); err != nil {
+		if err := trader.Fill(*start, *end, duration, provider); err != nil {
 			return err
 		}
 		return nil

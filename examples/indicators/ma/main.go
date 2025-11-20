@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/rangertaha/gotal/examples"
-	. "github.com/rangertaha/gotal/pkg/indicators"
+	ind "github.com/rangertaha/gotal/pkg/indicators"
 )
 
 func main() {
@@ -27,22 +27,21 @@ func main() {
 
 	// // Convert price series to OHLC series
 	fmt.Printf("\nConvert price series to OHLCV series\n\n")
-	ohlcv := OHLCV(prices, WithPeriod(25), OnField("price"))
+	ohlcv := ind.OHLCV(prices, ind.WithPeriod(25), ind.OnField("price"))
 	ohlcv.Print()
-
 
 	// Create a new series of sma 3
 	fmt.Printf("\nCreate a new series of sma with period 3\n\n")
-	sma := SMA(ohlcv, WithPeriod(3), OnField("close"))
+	sma := ind.SMA(ohlcv, ind.WithPeriod(3), ind.OnField("close"))
 	sma.Print()
 
 	// Create a new series of ema 3
 	fmt.Printf("\nCreate a new series of ema with period 3\n\n")
-	ema := EMA(ohlcv, WithPeriod(3), OnField("close"))
+	ema := ind.EMA(ohlcv, ind.WithPeriod(3), ind.OnField("close"))
 	ema.Print()
 
 	// Create a new series of wma 3
 	fmt.Printf("\nCreate a new series of wma with period 3\n\n")
-	wma := WMA(ohlcv, WithPeriod(3), OnField("close"))
+	wma := ind.WMA(ohlcv, ind.WithPeriod(3), ind.OnField("close"))
 	wma.Print()
 }

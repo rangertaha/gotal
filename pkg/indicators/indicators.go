@@ -5,7 +5,7 @@ import (
 
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/pkg/opt"
-	ind "github.com/rangertaha/gotal/internal/plugins/indicators"
+	i "github.com/rangertaha/gotal/internal/plugins/indicators"
 	_ "github.com/rangertaha/gotal/internal/plugins/indicators/all"
 )
 
@@ -13,52 +13,54 @@ var (
 	err error
 
 	// Indicator options
-	With           = opt.With
-	OnField        = opt.WithField
-	OnFields       = opt.WithFields
-	WithField      = opt.WithField
-	WithFields     = opt.WithFields
-	WithOutput     = opt.WithOutput
-	WithPeriod     = opt.WithPeriod
+	With         = opt.With
+	OnField      = opt.WithField
+	OnFields     = opt.WithFields
+	WithField    = opt.WithField
+	WithFields   = opt.WithFields
+	WithOutput   = opt.WithOutput
+	WithPeriod   = opt.WithPeriod
+	WithDuration = opt.WithDuration
 
-	// for MACD, 
-	WithSlowPeriod = opt.WithSlowPeriod
-	WithFastPeriod = opt.WithFastPeriod
+	// for MACD,
+	WithSlowPeriod   = opt.WithSlowPeriod
+	WithFastPeriod   = opt.WithFastPeriod
 	WithSignalPeriod = opt.WithSignalPeriod
-	
-	WithMAType     = opt.WithMAType
+
+	WithMAType = opt.WithMAType
 
 	// Group of indicators
-	TREND  []internal.SeriesFunc
-	TRENDs []internal.StreamFunc
+	// TREND  []internal.SeriesFunc
+
+	// Mock indicator
+	MOCK internal.SeriesFunc
 
 	// Moving Average indicators
-	OHLCV, SMA, EMA, WMA, DEMA, TEMA, TRIMA, KAMA, MAMA, T3           internal.SeriesFunc
-	OHLCVs, SMAs, EMAs, WMAs, DEMAs, TEMAs, TRIMAs, KAMAs, MAMAs, T3s internal.StreamFunc
+	OHLC, OHLCV, SMA, EMA, WMA, DEMA, TEMA, TRIMA, KAMA, MAMA, T3 internal.SeriesFunc
 
 	// MACD
-	MACD  internal.SeriesFunc
-	MACDs internal.StreamFunc
+	MACD internal.SeriesFunc
 )
 
 func init() {
-	// OHLCV
-	OHLCV, err = ind.Series("ohlcv")
-	// OHLCVs, err = ind.Stream("ohlcv")
+
+	// Mock indicator
+	MOCK, err = i.Series("mock")
+
+	// OHLC, OHLCV
+	OHLC, err = i.Series("ohlc")
+	OHLCV, err = i.Series("ohlcv")
 
 	// TREND, err = ind.Group(ind.TREND)
 
 	// Simple Moving Average
-	SMA, err = ind.Series("sma")
-	SMAs, err = ind.Stream("sma")
+	SMA, err = i.Series("sma")
 
 	// Exponential Moving Average
-	EMA, err = ind.Series("ema")
-	EMAs, err = ind.Stream("ema")
+	EMA, err = i.Series("ema")
 
 	// Weighted Moving Average
-	WMA, err = ind.Series("wma")
-	WMAs, err = ind.Stream("wma")
+	WMA, err = i.Series("wma")
 
 	// // Double Exponential Moving Average
 	// DEMA, err = ind.Series("dema")
@@ -72,12 +74,10 @@ func init() {
 	// T3, err = ind.Get("t3")
 
 	// Moving Average Convergence Divergence
-	MACD, err = ind.Series("macd")
-	MACDs, err = ind.Stream("macd")
+	MACD, err = i.Series("macd")
 
 	if err != nil {
 		fmt.Println("Error initializing indicators:", err)
 		panic(err)
 	}
 }
-

@@ -2,6 +2,7 @@ package ohlcv
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/pkg/opt"
@@ -11,9 +12,9 @@ import (
 )
 
 type ohlcv struct {
-	Name   string `hcl:"name,optional,default=ohlcv"`  // name of the data series
-	Input  string `hcl:"input,optional,default=value"` // input field name to compute the OHLCV on
-	Period int    `hcl:"period"`                       // period to compute the OHLCV on
+	Name     string        `hcl:"name,optional,default=ohlcv"`  // name of the data series
+	Input    string        `hcl:"input,optional,default=value"` // input field name to compute the OHLCV on
+	Duration time.Duration `hcl:"duration"`                     // period to compute the OHLCV on
 
 	// series is the series of ticks to compute the OHLCV on
 	series *series.Series
@@ -22,11 +23,11 @@ type ohlcv struct {
 func NewOHLCV(opts ...internal.OptFunc) *ohlcv {
 	cfg := opt.New(opts...)
 	name := cfg.Name("ohlcv")
-	period := cfg.Period(14)
+	duration := cfg.GetDuration("duration", 14*time.Minute)
 
 	return &ohlcv{
 		Name:   name,
-		Period: period,
+		Duration: duration,
 		Input:  cfg.Field("value"),
 
 		series: series.New(name),
@@ -56,7 +57,7 @@ func (i *ohlcv) Process(input *tick.Tick) (output *tick.Tick) {
 	// add the input tick to the series
 	i.series.Push(input)
 
-	if i.series.Len() == i.Period {
+	if i.series.Len() == int(i.Duration.Seconds()) {
 		output = tick.New(
 			tick.WithTimestamp(input.Timestamp()),
 			tick.WithDuration(input.Duration()),
@@ -78,9 +79,6 @@ func (i *ohlcv) Process(input *tick.Tick) (output *tick.Tick) {
 }
 
 func init() {
-	indicators.Add("ohlc", func(opts ...internal.OptFunc) internal.Indicator {
-		return NewOHLCV(opts...)
-	})
 	indicators.Add("ohlcv", func(opts ...internal.OptFunc) internal.Indicator {
 		return NewOHLCV(opts...)
 	})

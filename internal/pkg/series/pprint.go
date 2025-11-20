@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"text/tabwriter"
+
+	"github.com/rangertaha/gotal/internal/pkg/plot"
 )
 
 // Save saves the Series collection to a file.
@@ -53,15 +55,24 @@ func (s *Series) Print() {
 	w.Flush()
 }
 
-// // Rows returns a slice of strings representing the ticks
-// func (s *Series) Rows() [][]string {
-// 	rows := [][]string{}
-// 	for _, tick := range s.Series() {
-// 		row := []string{tick.Timestamp().Format(time.RFC3339)}
-// 		for _, field := range s.Fields() {
-// 			row = append(row, fmt.Sprintf("%f", field))
-// 		}
-// 		rows = append(rows, row)
-// 	}
-// 	return rows
-// }
+func (s *Series) Plot() *plot.Plot {
+	dimensions := 2
+	persist := false
+	debug := false
+	style := "lines"
+	p, _ := plot.NewPlot(dimensions, persist, debug)
+
+	for _, field := range s.Pop().FieldNames() {
+		for _, c := range s.GetCol(field) {
+			p.AddFunc2d(field, style, c, plot.Func2d(func(x float64) float64 {
+				return x * x
+			}))
+		}
+	}
+
+	// plot.ResetPointGroupStyle("Sample1", "points")
+	// plot.SavePlot("1.png")
+
+	return p
+
+}
