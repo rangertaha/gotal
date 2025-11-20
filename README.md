@@ -59,4 +59,3 @@ gotal/
    - Chart Patterns
    - Support/Resistance Detection
 
-$\sqrt{3x-1}+(1+x)^2$
