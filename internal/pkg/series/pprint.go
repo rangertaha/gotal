@@ -2,14 +2,21 @@ package series
 
 import (
 	"fmt"
-	"os"
 	"sort"
-	"strings"
 
-	"text/tabwriter"
-
+	"github.com/fatih/color"
 	"github.com/rangertaha/gotal/internal/pkg/plot"
+	"github.com/rodaine/table"
 )
+
+type Table struct {
+	headers []string
+	rows    [][]string
+}
+
+func (t *Table) AddRow(row ...string) {
+	t.rows = append(t.rows, row)
+}
 
 // Save saves the Series collection to a file.
 func (s *Series) Save(filename string, outputs ...string) error {
@@ -23,36 +30,62 @@ func (s *Series) Print() {
 	fmt.Println("Timestamp: ", s.Timestamp())
 	fmt.Println("Ticks: ", len(s.Ticks()))
 
-	// Convert field map to headers and rows
-	fieldMap := s.FieldMap()
-	headers := make([]string, 0, len(fieldMap))
-	for field := range fieldMap {
-		headers = append(headers, field)
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	t := s.Table()
+
+	// Convert []string to []interface{} for table.New
+	headers := make([]interface{}, len(t.headers))
+	for i, h := range t.headers {
+		headers[i] = h
+	}
+	
+	tbl := table.New(headers...)
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+	// Add rows from the series data
+	for _, row := range t.rows {
+		rowInterface := make([]interface{}, len(row))
+		for i, cell := range row {
+			rowInterface[i] = cell
+		}
+		tbl.AddRow(rowInterface...)
 	}
 
-	// Sort headers for consistent output
-	sort.Strings(headers)
+	tbl.Print()
+}
 
-	// Create rows array
+func (s *Series) Table() (t *Table) {
+	t = &Table{}
+
+	// Get all fields and sort them for determinism
+	fieldMap := s.FieldMap()
+	headers := make([]string, 0, len(fieldMap))
+	headers = append(headers, "timestamp")
+	for f := range fieldMap {
+		headers = append(headers, f)
+	}
+	sort.Strings(headers)
+	t.headers = headers
+
+	// Prepare rows
 	numRows := s.Len()
-	rows := make([][]string, numRows)
 	for i := 0; i < numRows; i++ {
 		row := make([]string, len(headers))
 		for j, header := range headers {
-			row[j] = fmt.Sprintf("%v", fieldMap[header][i])
+			// Prevent index out of range
+			vals := fieldMap[header]
+			if i >= len(vals) {
+				row[j] = ""
+			} else {
+				row[j] = fmt.Sprintf("%v", vals[i])
+			}
 		}
-		rows[i] = row
+		t.AddRow(row...)
 	}
+	return t
 
-	// Observe how the b's and the d's, despite appearing in the
-	// second cell of each line, belong to different columns.
-	w := tabwriter.NewWriter(os.Stdout, 3, 4, 1, '.', tabwriter.AlignRight|tabwriter.Debug)
-
-	fmt.Fprintln(w, strings.Join(headers, "\t"))
-	for _, row := range rows {
-		fmt.Fprintln(w, row)
-	}
-	w.Flush()
 }
 
 func (s *Series) Plot() *plot.Plot {

@@ -13,9 +13,6 @@ type Series struct {
 
 	// metadata
 	tags     map[string]string
-	parent   *Series   // experimental
-	children []*Series // experimental
-
 }
 
 // NewSeries creates a new Series of ticks
@@ -240,13 +237,11 @@ func (s *Series) Spawn(opts ...SeriesOptions) *Series {
 		name:   s.name,
 		ticks:  make([]*tick.Tick, 0),
 		tags:   s.tags,
-		parent: s,
 	}
 
 	for _, opt := range opts {
 		opt(series)
 	}
 
-	s.children = append(s.children, series)
 	return series
 }

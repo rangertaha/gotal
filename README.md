@@ -2,11 +2,11 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/rangertaha/gotal?style=flat-square)](https://goreportcard.com/report/github.com/rangertaha/gotal) [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/rangertaha/gotal) [![PkgGoDev](https://pkg.go.dev/badge/github.com/rangertaha/gotal)](https://pkg.go.dev/github.com/rangertaha/gotal) [![Release](https://img.shields.io/github/release/rangertaha/gotal.svg?style=flat-square)](https://github.com/rangertaha/gotal/releases/latest)
 
-Gotal is a comprehensive technical analysis library for Go that provides a framework for creating, training, testing, and running financial trading bots. It includes a rich set of technical indicators, data providers, broker integrations, and a powerful CLI tool for managing trading strategies.
+Gotal is a technical analysis library for Go that provides a framework for creating, training, testing, and running algorithmic trading bots. It includes technical indicators, data providers, broker integrations, and a CLI tool for managing the workflow.
 
 ## Features
 
-- **Technical Indicators**: Moving averages (SMA, EMA, WMA), MACD, OHLC/OHLCV aggregation, and more
+- **Technical Indicators**: Moving averages (SMA, EMA, WMA), MACD, aggregation, and more
 - **Data Providers**: Mock data provider for testing, with extensible provider system
 - **CLI Tool**: Command-line interface for project management, data filling, strategy training, and execution
 - **Time Series Processing**: Efficient time series data structures and operations
