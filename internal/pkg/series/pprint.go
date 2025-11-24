@@ -2,20 +2,28 @@ package series
 
 import (
 	"fmt"
-	"sort"
+	"strings"
 
 	"github.com/fatih/color"
-	"github.com/rangertaha/gotal/internal/pkg/plot"
 	"github.com/rodaine/table"
 )
 
 type Table struct {
-	headers []string
-	rows    [][]string
+	fields map[string][]string
 }
 
-func (t *Table) AddRow(row ...string) {
-	t.rows = append(t.rows, row)
+func (t *Table) Headers() (headers []string) {
+	for header := range t.fields {
+		headers = append(headers, header)
+	}
+	return headers
+}
+
+func (t *Table) Rows() (rows [][]string) {
+	for _, values := range t.fields {
+		rows = append(rows, values)
+	}
+	return rows
 }
 
 // Save saves the Series collection to a file.
@@ -23,89 +31,84 @@ func (s *Series) Save(filename string, outputs ...string) error {
 	return nil
 }
 
-// Print prints the Series collection to the console.
 func (s *Series) Print() {
-	fmt.Println("Series: ", s.Name())
-	fmt.Println("Duration: ", s.Duration())
-	fmt.Println("Timestamp: ", s.Timestamp())
-	fmt.Println("Ticks: ", len(s.Ticks()))
+	columns := s.Columns()
 
+	if len(columns) == 0 {
+		fmt.Println("No data to display")
+		return
+	}
+
+	// Build headers with timestamp first
+	headers := []string{"timestamp"}
+	for name := range columns {
+		if name != "timestamp" {
+			headers = append(headers, fmt.Sprintf("%v", name))
+		}
+	}
+
+	// Create table with headers
 	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
-	t := s.Table()
-
-	// Convert []string to []interface{} for table.New
-	headers := make([]interface{}, len(t.headers))
-	for i, h := range t.headers {
-		headers[i] = h
+	// Convert headers to []interface{} and make uppercase
+	headerInterfaces := make([]interface{}, len(headers))
+	for i, h := range headers {
+		headerInterfaces[i] = strings.ToUpper(h)
 	}
-	
-	tbl := table.New(headers...)
+
+	tbl := table.New(headerInterfaces...)
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	// Add rows from the series data
-	for _, row := range t.rows {
-		rowInterface := make([]interface{}, len(row))
-		for i, cell := range row {
-			rowInterface[i] = cell
-		}
-		tbl.AddRow(rowInterface...)
+	// Determine number of rows (use timestamp column length)
+	timestampCol, exists := columns["timestamp"]
+	if !exists {
+		return
 	}
 
-	tbl.Print()
-}
+	numRows := len(timestampCol)
 
-func (s *Series) Table() (t *Table) {
-	t = &Table{}
+	// Add rows
+	for rowIdx := 0; rowIdx < numRows; rowIdx++ {
+		row := make([]interface{}, len(headers))
 
-	// Get all fields and sort them for determinism
-	fieldMap := s.FieldMap()
-	headers := make([]string, 0, len(fieldMap))
-	headers = append(headers, "timestamp")
-	for f := range fieldMap {
-		headers = append(headers, f)
-	}
-	sort.Strings(headers)
-	t.headers = headers
-
-	// Prepare rows
-	numRows := s.Len()
-	for i := 0; i < numRows; i++ {
-		row := make([]string, len(headers))
-		for j, header := range headers {
-			// Prevent index out of range
-			vals := fieldMap[header]
-			if i >= len(vals) {
-				row[j] = ""
+		for colIdx, header := range headers {
+			if col, exists := columns[header]; exists {
+				if rowIdx < len(col) {
+					row[colIdx] = col[rowIdx]
+				} else {
+					row[colIdx] = ""
+				}
 			} else {
-				row[j] = fmt.Sprintf("%v", vals[i])
+				row[colIdx] = ""
 			}
 		}
-		t.AddRow(row...)
-	}
-	return t
 
+		tbl.AddRow(row...)
+	}
+
+	fmt.Printf("\n")
+	tbl.Print()
+	fmt.Printf("\n")
 }
 
-func (s *Series) Plot() *plot.Plot {
-	dimensions := 2
-	persist := false
-	debug := false
-	style := "lines"
-	p, _ := plot.NewPlot(dimensions, persist, debug)
+func (s *Series) Columns() (fields map[any][]any) {
+	fields = make(map[any][]any)
 
-	for _, field := range s.Pop().FieldNames() {
-		for _, c := range s.GetCol(field) {
-			p.AddFunc2d(field, style, c, plot.Func2d(func(x float64) float64 {
-				return x * x
-			}))
+	for _, tick := range s.Ticks() {
+		// Add timestamp
+		fields["timestamp"] = append(fields["timestamp"], tick.Timestamp().Unix())
+
+		// Add fields
+		for name, value := range tick.Fields() {
+			fields[name] = append(fields[name], value)
+		}
+
+		// Add tags
+		for name, value := range tick.Tags() {
+			fields[name] = append(fields[name], value)
 		}
 	}
 
-	// plot.ResetPointGroupStyle("Sample1", "points")
-	// plot.SavePlot("1.png")
-
-	return p
-
+	return fields
 }

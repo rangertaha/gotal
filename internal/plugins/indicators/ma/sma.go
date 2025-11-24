@@ -19,13 +19,17 @@ type sma struct {
 
 	// series is the series of ticks to compute the SMA on
 	series *series.Series
+
+	// Function properties for batch and streaming operations
+	BatchFunc  func(*series.Series) *series.Series
+	StreamFunc func(*tick.Tick) *tick.Tick
 }
 
 func NewSMA(opts ...internal.OptFunc) *sma {
 	cfg := opt.New(opts...)
 	period := cfg.Period(24)
 
-	return &sma{
+	smaIndicator := &sma{
 		Name:   cfg.Name("sma"),
 		Period: period,
 		Input:  cfg.Field("value"),
@@ -33,14 +37,31 @@ func NewSMA(opts ...internal.OptFunc) *sma {
 
 		series: series.New(cfg.Name("ema")),
 	}
+
+	// Assign function properties
+	smaIndicator.BatchFunc = smaIndicator.batch
+	smaIndicator.StreamFunc = smaIndicator.stream
+
+	return smaIndicator
 }
 
-func (i *sma) Compute(input *series.Series) (output *series.Series) {
+// Compute delegates to BatchFunc for interface compatibility
+func (i *sma) Compute(input *series.Series) *series.Series {
+	return i.BatchFunc(input)
+}
+
+// Process delegates to StreamFunc for interface compatibility
+func (i *sma) Process(input *tick.Tick) *tick.Tick {
+	return i.StreamFunc(input)
+}
+
+// batch processes an entire series (batch operation)
+func (i *sma) batch(input *series.Series) (output *series.Series) {
 	output = series.New(i.Name)
 	i.series.Reset()
 
 	for _, t := range input.Ticks() {
-		if t := i.Process(t); !t.IsEmpty() {
+		if t := i.stream(t); !t.IsEmpty() {
 			output.Add(t)
 		}
 	}
@@ -48,7 +69,8 @@ func (i *sma) Compute(input *series.Series) (output *series.Series) {
 	return
 }
 
-func (i *sma) Process(input *tick.Tick) (output *tick.Tick) {
+// stream processes individual ticks (streaming operation)
+func (i *sma) stream(input *tick.Tick) (output *tick.Tick) {
 	// check if the series has the required field
 	if !i.series.HasField(i.Input) {
 		panic(fmt.Sprintf("series is missing field %v", i.Input))
@@ -87,8 +109,11 @@ func (i *sma) calculate(input *series.Series) (output *tick.Tick) {
 	return
 }
 
+// New creates a new SMA indicator
+func New(opts ...internal.OptFunc) internal.Indicator {
+	return NewSMA(opts...)
+}
+
 func init() {
-	indicators.Add("sma", func(opts ...internal.OptFunc) internal.Indicator {
-		return NewSMA(opts...)
-	}, indicators.TREND)
+	indicators.Add("sma", New, indicators.TREND)
 }

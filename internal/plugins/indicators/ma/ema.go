@@ -22,10 +22,10 @@ type ema struct {
 	Name   string  `hcl:"name,optional,default=ema"`    // name of the data series
 	Input  string  `hcl:"input,optional,default=value"` // input field name to compute the EMA
 	Output string  `hcl:"output,optional"`              // output field name for the EMA
-	Period int     `hcl:"period"`                       // period to compute the EMA on
-	Alpha  float64 `hcl:"alpha,optional"`               // alpha to compute the EMA on
+	Period int     `hcl:"period"`                       // period to compute the EMA 
+	Alpha  float64 `hcl:"alpha,optional"`               // alpha to compute the EMA
 
-	// series is the series of ticks to compute the EMA on
+	// series is the series of ticks to compute the EMA
 	series *series.Series
 	// previousEMA stores the previous EMA value for calculation
 	previousEMA float64
