@@ -1,6 +1,5 @@
 package series
 
-
 // Field retrieves a slice of float64 values for the specified field from all ticks.
 // Returns an array containing the field values in chronological order.
 func (t *Series) SetField(name string, field []float64) {
@@ -41,6 +40,13 @@ func (t *Series) FieldMap() map[string][]float64 {
 		}
 	}
 	return fields
+}
+
+func (t *Series) FieldNames() (names []string) {
+	for name := range t.FieldMap() {
+		names = append(names, name)
+	}
+	return names
 }
 
 func (t *Series) FieldLen(field string) int {

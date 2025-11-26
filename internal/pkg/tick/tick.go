@@ -61,6 +61,10 @@ func (t *Tick) Timestamp() time.Time {
 	return t.timestamp
 }
 
+func (t *Tick) TimestampUnix() int64 {
+	return t.timestamp.Unix()
+}
+
 func (t *Tick) SetTimestamp(timestamp time.Time) {
 	t.timestamp = timestamp
 

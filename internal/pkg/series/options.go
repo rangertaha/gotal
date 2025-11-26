@@ -6,6 +6,8 @@ import (
 	"github.com/rangertaha/gotal/internal/pkg/tick"
 )
 
+type Option func(*Series) error
+
 type SeriesOptions func(*Series)
 
 func WithName(name string) SeriesOptions {

@@ -8,6 +8,14 @@ import (
 	"github.com/rangertaha/gotal/internal/pkg/tick"
 )
 
+
+// type Plugin interface {
+// 	Init(opts ...OptFunc) error
+// 	Run() error
+// 	Stop() error
+// }
+
+// Options are generic key/value options for any plugin
 type Options interface {
 	// Setters
 	Set(key string, value any)
@@ -105,8 +113,14 @@ type Node interface {
 	Description() string
 	Schema() any
 
+	// relationships
+	Parents() []string
+	Children() []string
+
 	// lifecycle
 	Init() error
-	Run() error
+	Load() error
+	Start() error
+	Save() error
 	Stop() error
 }

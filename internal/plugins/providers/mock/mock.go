@@ -1,56 +1,133 @@
-package macd
+package mock
 
 import (
-	"time"
+	"fmt"
 
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/pkg/opt"
 	"github.com/rangertaha/gotal/internal/pkg/series"
+	"github.com/rangertaha/gotal/internal/pkg/sig"
 	"github.com/rangertaha/gotal/internal/pkg/tick"
-	"github.com/rangertaha/gotal/internal/plugins/providers"
+	"github.com/rangertaha/gotal/internal/plugins/indicators"
 )
 
-type mock struct {
-	Name  string `hcl:"name,optional"`  // name of the data series
-	Field string `hcl:"input,optional"` // field name
+// EMAt​=α⋅Pricet​+(1−α)⋅EMAt−1
+// EMA = (Close - EMA(previous day)) * multiplier + EMA(previous day)
+// multiplier = 2 / (N + 1)
+// N is the number of days in the EMA
+// EMA(previous day) is the EMA of the previous day
+// Close is the closing price of the current day
 
-	Cache     string        `hcl:"cache,optional"`      // cache file name
-	Dataset   string        `hcl:"dataset,optional"`    // dataset name
-	Symbol    string        `hcl:"symbol,optional"`     // symbol name
-	StartDate time.Time     `hcl:"start_date,optional"` // start date
-	EndDate   time.Time     `hcl:"end_date,optional"`   // end date
-	Interval  time.Duration `hcl:"interval,optional"`   // interval
-
+type InputSeries struct {
+	Name   string   `hcl:"name,optional"`
+	Fields []string `hcl:"fields,optional"`
 }
 
-func New(opts ...internal.OptFunc) *mock {
+type output struct {
+	Fields []string `hcl:"fields,optional"`
+}
+
+type mock struct {
+	Name   string  `hcl:"name,optional,default=ema"` // name of the data series
+	Input  input   `hcl:"input,optional"`            // input field name to compute the EMA
+	Output output  `hcl:"output,optional"`           // output field name for the EMA
+	Period int     `hcl:"period"`                    // period to compute the EMA
+	Alpha  float64 `hcl:"alpha,optional"`            // alpha to compute the EMA
+
+	// series is the series of ticks to compute the EMA
+	series *series.Series
+	// previousEMA stores the previous EMA value for calculation
+	previousEMA float64
+	// initialized tracks if we have enough data to start EMA calculation
+	initialized bool
+}
+
+func NewMock(opts ...internal.OptFunc) *mock {
 	cfg := opt.New(opts...)
+	period := cfg.Period(14)
 
 	return &mock{
-		Name:      cfg.Name("mock"),
-		Field:     cfg.Field("value"),
-		Cache:     cfg.GetString("cache", "mock"),
-		Dataset:   cfg.GetString("dataset", "mock"),
-		Symbol:    cfg.GetString("symbol", "ASSET"),
-		StartDate: cfg.GetTime("start_date", time.Now().AddDate(-1, 0, 0)),
-		EndDate:   cfg.GetTime("end_date", time.Now()),
-		Interval:  cfg.Duration("interval", 1*time.Minute),
+		Name:   cfg.Name("ema"),
+		Period: period,
+		Input:  cfg.Field("value"),
+		Output: cfg.Output(fmt.Sprintf("%s%d", "ema", period)),
+		Alpha:  cfg.GetFloat("alpha", 2.0/(float64(period)+1.0)),
+
+		series:      series.New(cfg.Name("ema")),
+		initialized: false,
+		previousEMA: 0,
 	}
 }
 
-func (p *mock) Compute(input *series.Series) (output *series.Series) {
-	output = series.New(p.Name)
+func (i *mock) Compute(input *series.Series) (output *series.Series) {
+	output = series.New(i.Name)
+	i.series.Reset()
+
+	for _, t := range input.Ticks() {
+		if t := i.Process(t); !t.IsEmpty() {
+			output.Add(t)
+		}
+	}
 
 	return
 }
 
-func (p *mock) Process(input *tick.Tick) (output *tick.Tick) {
+func (i *mock) Process(input *tick.Tick) (output *tick.Tick) {
+
+	// check if the series has the required field
+	if !i.series.HasField(i.Input) {
+		panic(fmt.Sprintf("series is missing field %v", i.Input))
+	}
+
+	// add the input tick to the series
+	i.series.Push(input)
+
+	// create a new empty tick
+	output = tick.New()
+
+	// if the series is not long enough, return false
+	if i.series.Len() > i.Period {
+		// calculate the average
+		output = i.calculate(input)
+
+		// remove the first tick from the series
+		i.series.Pop()
+	}
+
+	return
+}
+
+func (i *mock) calculate(input *tick.Tick) (output *tick.Tick) {
+	// get the current price value
+	currentPrice := input.GetField(i.Input)
+
+	var emaValue float64
+
+	if !i.initialized {
+		// for the first calculation, use the current price as the initial EMA
+		emaValue = currentPrice
+		i.initialized = true
+	} else {
+		// calculate EMA using the formula: EMA = α * Price + (1 - α) * PreviousEMA
+		emaValue = i.Alpha*currentPrice + (1-i.Alpha)*i.previousEMA
+	}
+
+	// store the current EMA value for the next calculation
+	i.previousEMA = emaValue
+
+	// create a new tick with the EMA value
+	output = tick.New(
+		tick.WithTimestamp(input.Timestamp()),
+		tick.WithDuration(input.Duration()),
+		tick.WithFields(map[string]float64{i.Output: emaValue}),
+		tick.WithTags(input.Tags()),
+		tick.WithSignals(map[sig.Signal]sig.Strength{}))
 
 	return
 }
 
 func init() {
-	providers.Add("mock", func(opts ...internal.OptFunc) internal.Provider {
-		return New(opts...)
-	})
+	indicators.Add("ema", func(opts ...internal.OptFunc) internal.Indicator {
+		return NewMock(opts...)
+	}, indicators.TREND)
 }

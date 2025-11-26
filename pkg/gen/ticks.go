@@ -10,24 +10,30 @@ import (
 	_ "github.com/rangertaha/gotal/internal/plugins/providers/all"
 )
 
-func Sine(duration time.Duration, amplitude float64, frequency float64, offset float64, tags map[string]string) *series.Series {
+func Sine(field string, duration time.Duration, amplitude float64, frequency float64, offset float64,count int, tags map[string]string,  opts ...series.SeriesOptions) *series.Series {
 	ticks := series.New("sine")
 	t := time.Now()
 
 	// Apply the offset to the starting time
 	t = t.Add(time.Duration(offset) * duration)
 
-	// Generate one complete sine wave cycle (2π radians)
-	for i := 0.0; i <= 2*math.Pi; i += frequency {
-		value := (amplitude * math.Sin(i)) + amplitude
-		tick := tick.New(
-			tick.WithTimestamp(t),
-			tick.WithDuration(duration),
-			tick.WithFields(map[string]float64{"price": value}),
-			tick.WithTags(tags),
-		)
-		ticks.Add(tick)
-		t = t.Add(duration)
+	for i := 0; i < count; i++ {
+		// Generate one complete sine wave cycle (2π radians)
+		for i := 0.0; i <= 2*math.Pi; i += frequency {
+			value := (amplitude * math.Sin(i)) + amplitude
+			tick := tick.New(
+				tick.WithTimestamp(t),
+				tick.WithDuration(duration),
+				tick.WithFields(map[string]float64{field: value}),
+				tick.WithTags(tags),
+			)
+			ticks.Add(tick)
+			t = t.Add(duration)
+		}
+	}
+
+	for _, opt := range opts {
+		opt(ticks)
 	}
 
 	return ticks

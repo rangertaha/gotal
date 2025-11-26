@@ -2,34 +2,34 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/rangertaha/gotal/internal/pkg/series"
-	"github.com/rangertaha/gotal/pkg/gen"
+	_ "github.com/rangertaha/gotal/internal/plugins/providers/all"
+	"github.com/rangertaha/gotal/pkg/providers/stream"
 )
 
 func main() {
 	var Tags = map[string]string{
-		"symbol":   "BTC-USD",
-		"exchange": "BINANCE",
+		"symbol":   "SOL-USD",
+		"exchange": "COINBASE",
 		"currency": "USD",
-		"asset":    "BTC",
+		"asset":    "SOL",
 	}
 
-	// Generate a new series of sine waves
-	prices := gen.Sine("price", time.Second, 100, 0.1, 0, 4, Tags)
-	fmt.Println("Sine wave generated")
+	// Generate a new series of mock waves
+	prices := stream.Mock()
+	fmt.Println("mock wave generated")
 	prices.Print()
 
 	// Save to CSV
 	fmt.Println("CSV: Saving to file")
-	if err := prices.Save("sine.csv"); err != nil {
+	if err := prices.Save("mock.csv"); err != nil {
 		fmt.Println(err)
 	}
 
 	// Load from CSV
 	fmt.Println("CSV: Loading from file")
-	ts, err := series.Load("sine.csv")
+	ts, err := series.Load("mock.csv")
 	if err != nil {
 		fmt.Println("Errors:")
 		fmt.Println(err)
@@ -46,10 +46,10 @@ func main() {
 		fmt.Printf("Error creating plot: %v\n", err)
 	}
 
-	if err := plot.Save("sine.png", 8, 4); err != nil {
+	if err := plot.Save("mock.png", 8, 4); err != nil {
 		fmt.Printf("Error saving plot: %v\n", err)
 	}
-	
+
 	if err := plot.Show(8, 4); err != nil {
 		fmt.Printf("Error showing plot: %v\n", err)
 	}
@@ -58,7 +58,7 @@ func main() {
 	// 	fmt.Print(err)
 	// }
 
-	// if err := plot.Save("sine.png"); err != nil {
+	// if err := plot.Save("mock.png"); err != nil {
 	// 	fmt.Print(err)
 	// }
 }

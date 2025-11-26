@@ -1,6 +1,7 @@
 package series
 
 import (
+	"strings"
 	"time"
 
 	"github.com/rangertaha/gotal/internal/pkg/tick"
@@ -12,7 +13,7 @@ type Series struct {
 	ticks []*tick.Tick
 
 	// metadata
-	tags     map[string]string
+	tags map[string]string
 }
 
 // NewSeries creates a new Series of ticks
@@ -33,7 +34,7 @@ func New(name string, opts ...SeriesOptions) (s *Series) {
 
 // Name returns the name of the Series collection.
 func (s *Series) Name() string {
-	return s.name
+	return strings.TrimSpace(s.name)
 }
 
 // SetName sets the name of the Series collection.
@@ -234,9 +235,9 @@ func (s *Series) update() {
 
 func (s *Series) Spawn(opts ...SeriesOptions) *Series {
 	series := &Series{
-		name:   s.name,
-		ticks:  make([]*tick.Tick, 0),
-		tags:   s.tags,
+		name:  s.name,
+		ticks: make([]*tick.Tick, 0),
+		tags:  s.tags,
 	}
 
 	for _, opt := range opts {
