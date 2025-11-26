@@ -10,7 +10,7 @@ import (
 
 func Sort(ticks []*tick.Tick) []*tick.Tick {
 	sort.Slice(ticks, func(i, j int) bool {
-		return ticks[i].Timestamp().Before(ticks[j].Timestamp())
+		return ticks[i].Time().Before(ticks[j].Time())
 	})
 	return ticks
 }
@@ -46,7 +46,7 @@ func Random(name string, start, end time.Time, duration time.Duration, fields []
 
 	// Sort ticks by timestamp
 	sort.Slice(s.ticks, func(i, j int) bool {
-		return s.ticks[i].Timestamp().Before(s.ticks[j].Timestamp())
+		return s.ticks[i].Time().Before(s.ticks[j].Time())
 	})
 
 	for _, opt := range opts {

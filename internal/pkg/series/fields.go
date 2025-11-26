@@ -25,7 +25,7 @@ func (s *Series) Field(field string) (out []float64) {
 // Returns an array containing the field values in chronological order.
 func (s *Series) GetCol(field string) (column [][]float64) {
 	for _, tick := range s.ticks {
-		column = append(column, []float64{float64(tick.Timestamp().Unix()), tick.GetField(field)})
+		column = append(column, []float64{float64(tick.Epock()), tick.GetField(field)})
 	}
 	return column
 }
@@ -34,12 +34,34 @@ func (s *Series) GetCol(field string) (column [][]float64) {
 // Returns a map where the keys are field names and the values are slices of field values in chronological order.
 func (t *Series) FieldMap() map[string][]float64 {
 	fields := make(map[string][]float64)
+
+	// Add the timestamp field
 	for _, tick := range t.ticks {
 		for k, v := range tick.Fields() {
 			fields[k] = append(fields[k], v)
 		}
 	}
 	return fields
+}
+
+func (t *Series) Columns() map[string][]interface{} {
+	columns := make(map[string][]interface{})
+	
+	for i, tick := range t.ticks {
+		// Add the timestamp field
+		columns["timestamp"][i] = float64(tick.Epock())
+
+		// Add the fields
+		for k, v := range tick.Fields() {
+			columns[k][i] = v
+		}
+
+		// Add the tags
+		for k, v := range tick.Tags() {
+			columns[k][i] = v
+		}
+	}
+	return columns
 }
 
 func (t *Series) FieldNames() (names []string) {

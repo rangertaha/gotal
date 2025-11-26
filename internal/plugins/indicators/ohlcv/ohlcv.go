@@ -59,7 +59,7 @@ func (i *ohlcv) Process(input *tick.Tick) (output *tick.Tick) {
 
 	if i.series.Len() == int(i.Duration.Seconds()) {
 		output = tick.New(
-			tick.WithTimestamp(input.Timestamp()),
+			tick.WithTime(input.Time()),
 			tick.WithDuration(input.Duration()),
 			tick.WithFields(map[string]float64{
 				"open":   i.series.First(i.Input),

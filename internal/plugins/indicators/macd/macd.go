@@ -124,7 +124,7 @@ func (i *macd) calculate(input *tick.Tick) (output *tick.Tick) {
 
 	// Add MACD line to signal EMA series for signal line calculation
 	output = tick.New(
-		tick.WithTimestamp(input.Timestamp()),
+		tick.WithTime(input.Time()),
 		tick.WithDuration(input.Duration()),
 		tick.WithFields(map[string]float64{"macd": macdValue, "histogram": histogramValue, "fast": fastValue, "slow": slowValue, "signal": signalValue}),
 		tick.WithTags(input.Tags()),

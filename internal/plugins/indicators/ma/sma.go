@@ -100,7 +100,7 @@ func (i *sma) calculate(input *series.Series) (output *tick.Tick) {
 
 	// create a new tick with the SMA value
 	output = tick.New(
-		tick.WithTimestamp(i.series.Timestamp()),
+		tick.WithTime(i.series.Timestamp()),
 		tick.WithDuration(i.series.Duration()),
 		tick.WithFields(map[string]float64{i.Output: value}),
 		tick.WithTags(i.series.Tags()),

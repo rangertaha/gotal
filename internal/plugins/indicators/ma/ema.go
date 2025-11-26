@@ -108,7 +108,7 @@ func (i *ema) calculate(input *tick.Tick) (output *tick.Tick) {
 
 	// create a new tick with the EMA value
 	output = tick.New(
-		tick.WithTimestamp(input.Timestamp()),
+		tick.WithTime(input.Time()),
 		tick.WithDuration(input.Duration()),
 		tick.WithFields(map[string]float64{i.Output: emaValue}),
 		tick.WithTags(input.Tags()),

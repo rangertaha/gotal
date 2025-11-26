@@ -63,19 +63,19 @@ func (s *Series) Timestamp() time.Time {
 	if len(s.ticks) == 0 {
 		return time.Time{}
 	}
-	return s.ticks[len(s.ticks)-1].Timestamp()
+	return s.ticks[len(s.ticks)-1].Time()
 }
 
 func (s *Series) TimeRange() (time.Time, time.Time) {
 	if len(s.ticks) == 0 {
 		return time.Time{}, time.Time{}
 	}
-	return s.ticks[0].Timestamp(), s.ticks[len(s.ticks)-1].Timestamp()
+	return s.ticks[0].Time(), s.ticks[len(s.ticks)-1].Time()
 }
 
 func (s *Series) Timestamps() (out []time.Time) {
 	for _, tick := range s.ticks {
-		out = append(out, tick.Timestamp())
+		out = append(out, tick.Time())
 	}
 	return out
 }
@@ -105,7 +105,7 @@ func (s *Series) Update(seriesInputs ...*Series) *Series {
 	for _, seriesInput := range seriesInputs {
 		for _, tickInput := range seriesInput.Ticks() {
 			for i, tick := range s.ticks {
-				if tick.Timestamp().Equal(tickInput.Timestamp()) {
+				if tick.Time().Equal(tickInput.Time()) {
 					s.ticks[i].Update(tickInput)
 				}
 			}
@@ -177,7 +177,7 @@ func (s *Series) At(index int) *tick.Tick {
 
 func (s *Series) AtTime(timestamp time.Time) *tick.Tick {
 	for _, tick := range s.ticks {
-		if tick.Timestamp().Equal(timestamp) {
+		if tick.Time().Equal(timestamp) {
 			return tick
 		}
 	}

@@ -36,13 +36,13 @@ func WithTicks(ticks ...*tick.Tick) SeriesOptions {
 	return func(s *Series) { s.ticks = ticks }
 }
 
-func WithFields(fields []map[string]float64) SeriesOptions {
+func WithFields(fields ...map[string]float64) SeriesOptions {
 	return func(s *Series) {
 		for _, field := range fields {
 			tick := tick.New()
 			for k, v := range field {
 				if k == "time" {
-					tick.SetTimestamp(time.Unix(int64(v), 0))
+					tick.SetTime(time.Unix(int64(v), 0))
 				} else {
 					tick.SetField(k, v)
 				}

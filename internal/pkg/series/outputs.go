@@ -53,7 +53,7 @@ func (s *Series) columns() (columns map[any][]any) {
 
 	for _, tick := range s.Ticks() {
 		// Add timestamp
-		columns["timestamp"] = append(columns["timestamp"], tick.Timestamp().Unix())
+		columns["timestamp"] = append(columns["timestamp"], tick.Time().Unix())
 
 		// Add fields
 		for name, value := range tick.Fields() {

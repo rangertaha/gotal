@@ -64,7 +64,7 @@ func (p *Plot) getPoints(field string) plotter.XYs {
 	pts := make(plotter.XYs, p.series.Len())
 	for i, tick := range p.series.Ticks() {
 		if tick.HasField(field) && !tick.IsEmpty() {
-			pts[i].X = float64(tick.TimestampUnix())
+			pts[i].X = float64(tick.Epock())
 			pts[i].Y = tick.GetField(field)
 		}
 	}

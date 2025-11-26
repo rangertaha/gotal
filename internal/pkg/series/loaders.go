@@ -115,10 +115,10 @@ func ReadCSV(path string) (*Series, error) {
 					// try RFC3339
 					tm, err2 := time.Parse(time.RFC3339, valueStr)
 					if err2 == nil {
-						t.SetTimestamp(tm)
+						t.SetTime(tm)
 					}
 				} else {
-					t.SetTimestamp(time.Unix(ts, 0))
+					t.SetTime(time.Unix(ts, 0))
 				}
 			} else {
 				v, err := strconv.ParseFloat(valueStr, 64)

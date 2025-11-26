@@ -133,9 +133,6 @@ See the `examples/` directory for detailed examples:
 - [GoDoc](http://godoc.org/github.com/rangertaha/gotal)
 - [PkgGoDev](https://pkg.go.dev/github.com/rangertaha/gotal)
 
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details.
 
 
 ## Risk Disclaimer & Legal Notice
@@ -148,9 +145,15 @@ Contributions are welcome! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md)
 
 **INDEPENDENT RESEARCH**: Before making any trading or investment decisions, you should conduct your own research and analysis and/or consult with qualified financial professionals.
 
+
 ## License
 
 See [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details.
+
 
 ## Author
 

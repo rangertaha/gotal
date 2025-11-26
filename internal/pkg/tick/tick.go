@@ -12,7 +12,7 @@ type IDFunc func(t *Tick) string
 // Tick represents a single market event, capturing the most granular form of market data.
 type Tick struct {
 	uuid      string                      // The unique identifier for the tick
-	timestamp time.Time                   // The time at which the tick was recorded
+	timestamp int64                       // The time at which the tick was recorded
 	duration  time.Duration               // The duration of the tick, typically very short
 	fields    map[string]float64          // The numerical fields
 	tags      map[string]string           // The classification tags, e.g. market, symbol, exchange, currency, etc.
@@ -23,7 +23,7 @@ type Tick struct {
 func New(opts ...TickOptions) *Tick {
 	tick := &Tick{
 		uuid:      "",
-		timestamp: time.Now(),
+		timestamp: time.Now().Unix(),
 		duration:  0,
 		fields:    map[string]float64{},
 		tags:      map[string]string{},
@@ -57,20 +57,28 @@ func (t *Tick) SetIDFunc(idFunc IDFunc) {
 	t.idFunc = idFunc
 }
 
-func (t *Tick) Timestamp() time.Time {
+func (t *Tick) Time() time.Time {
+	return time.Unix(t.timestamp, 0)
+}
+
+func (t *Tick) Epock() int64 {
 	return t.timestamp
 }
 
-func (t *Tick) TimestampUnix() int64 {
-	return t.timestamp.Unix()
+func (t *Tick) SetEpock(epock int64) {
+	t.timestamp = epock
 }
 
-func (t *Tick) SetTimestamp(timestamp time.Time) {
-	t.timestamp = timestamp
+func (t *Tick) SetTime(timestamp time.Time) {
+	t.timestamp = timestamp.Unix()
 
 	// Truncate the timestamp to the duration
 	if t.duration > 0 {
-		t.timestamp = t.timestamp.Truncate(t.duration)
+		// Get the timestamp as a time.Time
+		timestamp := time.Unix(t.timestamp, 0)
+
+		// Truncate the timestamp to the duration
+		t.timestamp = timestamp.Truncate(t.duration).Unix()
 	}
 }
 
@@ -82,8 +90,12 @@ func (t *Tick) SetDuration(duration time.Duration) {
 	t.duration = duration
 
 	// Truncate the timestamp to the duration
-	if duration > 0 {
-		t.timestamp = t.timestamp.Truncate(duration)
+	if t.duration > 0 {
+		// Get the timestamp as a time.Time
+		timestamp := time.Unix(t.timestamp, 0)
+		
+		// Truncate the timestamp to the duration
+		t.timestamp = timestamp.Truncate(t.duration).Unix()
 	}
 }
 
@@ -268,7 +280,7 @@ func (t *Tick) Update(other *Tick) *Tick {
 	for k, v := range other.signals {
 		t.signals[k] = v
 	}
-	t.SetTimestamp(other.timestamp)
+	t.SetEpock(other.timestamp)
 	t.SetDuration(other.duration)
 	t.SetID(other.uuid)
 	t.SetIDFunc(other.idFunc)
@@ -282,7 +294,7 @@ func (t *Tick) Update(other *Tick) *Tick {
 func (t *Tick) Spawn(opts ...TickOptions) *Tick {
 	tick := &Tick{
 		uuid:      t.uuid,
-		timestamp: t.timestamp.Add(t.duration),
+		timestamp: t.Time().Add(t.duration).Unix(),
 		duration:  t.duration,
 		fields:    map[string]float64{},
 		tags:      t.tags,

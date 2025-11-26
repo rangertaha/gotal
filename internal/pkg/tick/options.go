@@ -32,8 +32,8 @@ func WithSignals(signals map[sig.Signal]sig.Strength) TickOptions {
 	}
 }
 
-func WithTimestamp(timestamp time.Time) TickOptions {
+func WithTime(timestamp time.Time) TickOptions {
 	return func(t *Tick) {
-		t.timestamp = timestamp
+		t.timestamp = timestamp.Unix()
 	}
 }

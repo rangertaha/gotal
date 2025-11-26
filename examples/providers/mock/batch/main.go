@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rangertaha/gotal/internal/pkg/series"
+	"github.com/rangertaha/gotal/internal/pkg/tick"
 	_ "github.com/rangertaha/gotal/internal/plugins/providers/all"
 	"github.com/rangertaha/gotal/pkg/providers"
 )
@@ -16,7 +17,7 @@ var (
 		"currency": "USD",
 		"asset":    "SOL",
 	}
-	Fields = map[string]float64{
+	Field = map[string]float64{
 		"start":    float64(time.Now().Unix()),
 		"stop":     float64(time.Now().Add(1 * time.Hour).Unix()),
 		"duration": float64(time.Duration(1 * time.Minute)),
@@ -24,8 +25,8 @@ var (
 )
 
 func main() {
-
-	series := series.New("mock", series.WithTags(Tags), series.WithFields(Fields))
+	ticks := tick.New(tick.WithFields(Field))
+	series := series.New("mock", series.WithFields(Field), series.WithTicks(ticks))
 
 	// Generate a new series of mock data
 	prices := providers.Mock(series, providers.With("type", "sine"))
