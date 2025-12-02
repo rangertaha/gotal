@@ -1,133 +1,119 @@
 package mock
 
 import (
-	"fmt"
-
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/pkg/opt"
-	"github.com/rangertaha/gotal/internal/pkg/series"
-	"github.com/rangertaha/gotal/internal/pkg/sig"
-	"github.com/rangertaha/gotal/internal/pkg/tick"
-	"github.com/rangertaha/gotal/internal/plugins/indicators"
+	"github.com/rangertaha/gotal/internal/pkg/schema"
+	"github.com/rangertaha/gotal/internal/plugins/providers"
 )
 
-// EMAt​=α⋅Pricet​+(1−α)⋅EMAt−1
-// EMA = (Close - EMA(previous day)) * multiplier + EMA(previous day)
-// multiplier = 2 / (N + 1)
-// N is the number of days in the EMA
-// EMA(previous day) is the EMA of the previous day
-// Close is the closing price of the current day
-
-type InputSeries struct {
-	Name   string   `hcl:"name,optional"`
-	Fields []string `hcl:"fields,optional"`
-}
-
-type output struct {
-	Fields []string `hcl:"fields,optional"`
-}
-
 type mock struct {
-	Name   string  `hcl:"name,optional,default=ema"` // name of the data series
-	Input  input   `hcl:"input,optional"`            // input field name to compute the EMA
-	Output output  `hcl:"output,optional"`           // output field name for the EMA
-	Period int     `hcl:"period"`                    // period to compute the EMA
-	Alpha  float64 `hcl:"alpha,optional"`            // alpha to compute the EMA
-
-	// series is the series of ticks to compute the EMA
-	series *series.Series
-	// previousEMA stores the previous EMA value for calculation
-	previousEMA float64
-	// initialized tracks if we have enough data to start EMA calculation
-	initialized bool
+	Source string `hcl:"name,optional,default=ema"`
+	Period int    `hcl:"period,optional,default=14"`
 }
 
-func NewMock(opts ...internal.OptFunc) *mock {
+func NewMock(opts ...internal.PluginOption) internal.Plugin {
 	cfg := opt.New(opts...)
-	period := cfg.Period(14)
+	m := &mock{
+		Source: cfg.String("source", "ema"),
+		Period: cfg.Int("period", 100),
+	}
 
-	return &mock{
-		Name:   cfg.Name("ema"),
-		Period: period,
-		Input:  cfg.Field("value"),
-		Output: cfg.Output(fmt.Sprintf("%s%d", "ema", period)),
-		Alpha:  cfg.GetFloat("alpha", 2.0/(float64(period)+1.0)),
+	return m
+}
 
-		series:      series.New(cfg.Name("ema")),
-		initialized: false,
-		previousEMA: 0,
+func (m *mock) Name() string {
+	return "ema"
+}
+
+func (m *mock) Description() string {
+	return "Mock provider"
+}
+
+func (m *mock) Schema() internal.Schema {
+	return schema.Plugin{
+		Name: "mock",
+		Description: "Mock provider",
+		Requires: map[string]schema.Plugin{
+			"fast": {
+				Name:        "ema",
+				Description: "EMA dataset",
+				Options: map[string]schema.Option{
+					"period": {
+						Name:        "period",
+						Type:        schema.TypeInt,
+						Required:    true,
+						Description: "Period",
+						Default:     100,
+					},
+				},
+			},
+			"slow": {
+				Name:        "ema",
+				Description: "EMA dataset",
+			},
+			"sma": {
+				Name:        "sma",
+				Description: "SMA dataset",
+			},
+			"rsi": {
+				Name:        "rsi",
+				Description: "RSI dataset",
+			},
+			"macd": {
+				Name:        "macd",
+				Description: "MACD dataset",
+			},
+		},
+		Inputs: map[string]schema.Dataset{
+			"prices": { // New dataset name
+				Name:   "price",             // Dataset provider name
+				Fields: []string{"value"}, // Required fields of the dataset
+				Tags:   []string{"*"},     // Required tags of the dataset
+
+			},
+		},
+		Outputs: map[string]schema.Dataset{
+			"fast": { // New dataset name
+				Name:   "ema",             // Dataset provider name
+				Fields: []string{"value"}, // Required fields of the dataset
+				Tags:   []string{"ema"},   // Required tags of the dataset
+			},
+		},
+		Parameters: map[string]schema.Parameter{
+			"source": {
+				Name:        "source",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Source",
+				Default:     "ema",
+			},
+		},
 	}
 }
 
-func (i *mock) Compute(input *series.Series) (output *series.Series) {
-	output = series.New(i.Name)
-	i.series.Reset()
-
-	for _, t := range input.Ticks() {
-		if t := i.Process(t); !t.IsEmpty() {
-			output.Add(t)
-		}
-	}
-
-	return
+func (m *mock) Init() error {
+	return nil
 }
 
-func (i *mock) Process(input *tick.Tick) (output *tick.Tick) {
-
-	// check if the series has the required field
-	if !i.series.HasField(i.Input) {
-		panic(fmt.Sprintf("series is missing field %v", i.Input))
-	}
-
-	// add the input tick to the series
-	i.series.Push(input)
-
-	// create a new empty tick
-	output = tick.New()
-
-	// if the series is not long enough, return false
-	if i.series.Len() > i.Period {
-		// calculate the average
-		output = i.calculate(input)
-
-		// remove the first tick from the series
-		i.series.Pop()
-	}
-
-	return
+func (m *mock) Load() error {
+	return nil
 }
 
-func (i *mock) calculate(input *tick.Tick) (output *tick.Tick) {
-	// get the current price value
-	currentPrice := input.GetField(i.Input)
+func (m *mock) Start() error {
+	return nil
+}
 
-	var emaValue float64
+func (m *mock) Save() error {
+	return nil
+}
 
-	if !i.initialized {
-		// for the first calculation, use the current price as the initial EMA
-		emaValue = currentPrice
-		i.initialized = true
-	} else {
-		// calculate EMA using the formula: EMA = α * Price + (1 - α) * PreviousEMA
-		emaValue = i.Alpha*currentPrice + (1-i.Alpha)*i.previousEMA
-	}
-
-	// store the current EMA value for the next calculation
-	i.previousEMA = emaValue
-
-	// create a new tick with the EMA value
-	output = tick.New(
-		tick.WithTimestamp(input.Timestamp()),
-		tick.WithDuration(input.Duration()),
-		tick.WithFields(map[string]float64{i.Output: emaValue}),
-		tick.WithTags(input.Tags()),
-		tick.WithSignals(map[sig.Signal]sig.Strength{}))
-
-	return
+func (m *mock) Stop() error {
+	return nil
 }
 
 func init() {
-	indicators.Add("ema", func(opts ...internal.OptFunc) internal.Indicator {
+	providers.Add("mock", func(opts ...internal.PluginOption) internal.Plugin {
 		return NewMock(opts...)
-	}, indicators.TREND)
+	})
 }

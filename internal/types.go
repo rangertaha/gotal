@@ -8,7 +8,6 @@ import (
 	"github.com/rangertaha/gotal/internal/pkg/tick"
 )
 
-
 // type Plugin interface {
 // 	Init(opts ...OptFunc) error
 // 	Run() error
@@ -101,10 +100,10 @@ type Storage interface {
 type Trader interface {
 	Init(paths ...string) error
 	Fill(start, end time.Time, duration time.Duration, providers string) error // backfill historical prices from data providers
-	Train(start, end time.Time) error                                         // train the strategy model and save it to storage
-	Test(start, end time.Time) error                                          // test the trained model and return the results
-	Live(start, end time.Time) error                                          // live testing with real data and mock broker
-	Exec(start, end time.Time) error                                          // execute with real data and real broker
+	Train(start, end time.Time) error                                          // train the strategy model and save it to storage
+	Test(start, end time.Time) error                                           // test the trained model and return the results
+	Live(start, end time.Time) error                                           // live testing with real data and mock broker
+	Exec(start, end time.Time) error                                           // execute with real data and real broker
 }
 
 type Node interface {
@@ -124,3 +123,21 @@ type Node interface {
 	Save() error
 	Stop() error
 }
+
+type Plugin interface {
+	Name() string
+	Description() string
+	Schema() Schema
+
+	// lifecycle
+	Init() error
+	Load() error
+	Start() error
+	Save() error
+	Stop() error
+}
+
+type PluginOption func(Options)
+
+
+type Schema interface {}

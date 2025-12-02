@@ -27,7 +27,7 @@ func Random(name string, start, end time.Time, duration time.Duration, fields []
 	for t := start; t.Before(end); t = t.Add(duration) {
 		// Create new tick with timestamp and duration
 		tick := tick.New(
-			tick.WithTimestamp(t),
+			tick.WithTime(t),
 			tick.WithDuration(duration),
 		)
 

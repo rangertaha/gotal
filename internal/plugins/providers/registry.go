@@ -5,42 +5,30 @@ import (
 	"strings"
 
 	"github.com/rangertaha/gotal/internal"
-	"github.com/rangertaha/gotal/internal/pkg/series"
 )
 
-type NewProviderFunc func(opts ...internal.OptFunc) internal.Provider
+type NewPluginFunc func(opts ...internal.PluginOption) internal.Plugin
 
-var PROVIDERS = map[string]NewProviderFunc{}
+var PLUGINS = map[string]NewPluginFunc{}
 
-func Add(name string, fn NewProviderFunc) error {
+func Add(name string, fn NewPluginFunc) error {
 	name = strings.ToLower(name)
 
-	if _, ok := PROVIDERS[name]; ok {
+	if _, ok := PLUGINS[name]; ok {
 		return fmt.Errorf("provider %s already exists", name)
 	}
 
-	PROVIDERS[name] = fn
+	PLUGINS[name] = fn
 
 	return nil
 }
 
-func Get(name string) (NewProviderFunc, error) {
+func Get(name string) (NewPluginFunc, error) {
 	name = strings.ToLower(name)
 
-	if provider, ok := PROVIDERS[name]; ok {
-		return provider, nil
+	if plugin, ok := PLUGINS[name]; ok {
+		return plugin, nil
 	}
-	return nil, fmt.Errorf("provider %s not found", name)
+	return nil, fmt.Errorf("plugin %s not found", name)
 }
 
-func Series(name string) (internal.SeriesFunc, error) {
-	name = strings.ToLower(name)
-
-	if provider, ok := PROVIDERS[name]; ok {
-		providerFn := internal.SeriesFunc(func(input *series.Series, opts ...internal.OptFunc) (output *series.Series) {
-			return provider(opts...).Compute(input)
-		})
-		return providerFn, nil
-	}
-	return nil, fmt.Errorf("provider %s not found", name)
-}

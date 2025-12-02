@@ -25,14 +25,29 @@ const (
 	COMMIT = "35a7441"
 )
 
-const BANNER = `   
-  ____  ___ _____  _     
- / ___|/ _ \_   _|/ \ 
-| |  _| | | || | / _ \
-| |_| | |_| || |/ ___ \
+const CLI_BANNER = `   
+  ____  ___ _____  _    
+ / ___|/ _ \_   _|/ \   
+| |  _| | | || | / _ \  
+| |_| | |_| || |/ ___ \ 
  \____|\___/ |_/_/   \_\
-                  
- Go Trading Agent 
+                
+ Go Technical Analysis
+______________________________________________
+COMMIT:  %s
+AUTHOR:  Rangertaha
+VERSION: v%s
+DATE:    %s
+`
+
+const LIB_BANNER = `   
+  ____  ___ _____  _    _     
+ / ___|/ _ \_   _|/ \  | |    
+| |  _| | | || | / _ \ | |    
+| |_| | |_| || |/ ___ \| |___ 
+ \____|\___/ |_/_/   \_\_____|
+              
+ Go Technical Analysis Library
 ______________________________________________
 COMMIT:  %s
 AUTHOR:  Rangertaha
@@ -41,12 +56,16 @@ DATE:    %s
 
 `
 
-func Banner() string {
-	return fmt.Sprintf(BANNER, COMMIT, VERSION, COMPILED)
+func CliBanner() string {
+	return fmt.Sprintf(CLI_BANNER, COMMIT, VERSION, COMPILED)
+}
+
+func LibBanner() string {
+	return fmt.Sprintf(LIB_BANNER, COMMIT, VERSION, COMPILED)
 }
 
 func PrintBanner() {
-	fmt.Print(Banner())
+	fmt.Print(CliBanner())
 }
 
 
