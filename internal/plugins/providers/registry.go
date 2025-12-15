@@ -7,7 +7,7 @@ import (
 	"github.com/rangertaha/gotal/internal"
 )
 
-type NewPluginFunc func(opts ...internal.PluginOption) internal.Plugin
+type NewPluginFunc func(opts ...internal.PluginOptions) internal.Plugin
 
 var PLUGINS = map[string]NewPluginFunc{}
 

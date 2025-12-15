@@ -5,7 +5,7 @@ import (
 
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/pkg/opt"
-	i "github.com/rangertaha/gotal/internal/plugins/indicators"
+	"github.com/rangertaha/gotal/internal/plugins/indicators"
 	_ "github.com/rangertaha/gotal/internal/plugins/indicators/all"
 )
 
@@ -33,23 +33,23 @@ var (
 	// TREND  []internal.SeriesFunc
 
 	// Mock indicator
-	MOCK internal.SeriesFunc
+	MOCK internal.IndicatorFunc
 
 	// Moving Average indicators
-	OHLC, OHLCV, SMA, EMA, WMA, DEMA, TEMA, TRIMA, KAMA, MAMA, T3 internal.SeriesFunc
+	OHLC, OHLCV, SMA, EMA, WMA, DEMA, TEMA, TRIMA, KAMA, MAMA, T3 internal.IndicatorFunc
 
 	// MACD
-	MACD internal.SeriesFunc
+	MACD internal.IndicatorFunc
 )
 
 func init() {
 
 	// Mock indicator
-	MOCK, err = i.Series("mock")
+	MOCK, err = indicators.Get("mock")
 
 	// OHLC, OHLCV
-	OHLC, err = i.Series("ohlc")
-	OHLCV, err = i.Series("ohlcv")
+	OHLC, err = indicators.Series("ohlc")
+	OHLCV, err = ih.Series("ohlcv")
 
 	// TREND, err = ind.Group(ind.TREND)
 

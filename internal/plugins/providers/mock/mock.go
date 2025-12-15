@@ -12,7 +12,7 @@ type mock struct {
 	Period int    `hcl:"period,optional,default=14"`
 }
 
-func NewMock(opts ...internal.PluginOption) internal.Plugin {
+func NewMock(opts ...internal.PluginOptions) internal.Plugin {
 	cfg := opt.New(opts...)
 	m := &mock{
 		Source: cfg.String("source", "ema"),
@@ -113,7 +113,7 @@ func (m *mock) Stop() error {
 }
 
 func init() {
-	providers.Add("mock", func(opts ...internal.PluginOption) internal.Plugin {
+	providers.Add("mock", func(opts ...internal.PluginOptions) internal.Plugin {
 		return NewMock(opts...)
 	})
 }
