@@ -3,11 +3,15 @@ package internal
 import (
 	"time"
 
-	"github.com/rangertaha/gotal/internal/pkg/series"
-	"github.com/rangertaha/gotal/internal/pkg/stream"
-	"github.com/rangertaha/gotal/internal/pkg/tick"
+	"github.com/rangertaha/gotal/internal/series"
+	"github.com/rangertaha/gotal/internal/stream"
+	"github.com/rangertaha/gotal/internal/tick"
 )
 
+type PluginOptions func(Options)
+type PluginFunc func(...PluginOptions) (*series.Series, *stream.Stream)
+
+// ------------------------------------------------------------
 // type Plugin interface {
 // 	Init(opts ...OptFunc) error
 // 	Run() error
@@ -28,6 +32,17 @@ type Options interface {
 	GetDuration(key string, defaults ...any) time.Duration
 	GetTime(key string, defaults ...any) time.Time
 
+	// Types
+	Int(key string, defaults ...any) int
+	String(key string, defaults ...any) string
+	Float(key string, defaults ...any) float64
+	Bool(key string, defaults ...any) bool
+	Duration(key string, defaults ...any) time.Duration
+	Time(key string, defaults ...any) time.Time
+	Series(key string, defaults ...any) *series.Series
+	Stream(key string, defaults ...any) *stream.Stream
+	Tick(key string, defaults ...any) *tick.Tick
+
 	// Objects
 	Period(n ...any) int
 	FastPeriod(n ...any) int
@@ -40,10 +55,15 @@ type Options interface {
 	Field(s ...any) string
 	Fields(s ...any) []string
 	Output(s ...any) string
-	Duration(s ...any) time.Duration
+
+	// Errors
+	Errors() error
+	AddError(error)
+	HasErrors() bool
+	DelErrors()
 }
 
-type OptFunc func(Options)
+// type OptFunc func(Options)
 
 // type IndicatorFunc IndicatorFn
 
@@ -52,92 +72,96 @@ type OptFunc func(Options)
 // 	Series(series *series.Series, opts ...OptFunc) *series.Series
 // }
 
-type Indicator interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
+// type Indicator interface {
+// 	Process(*tick.Tick) *tick.Tick
+// 	Compute(*series.Series) *series.Series
+// }
 
-type Exporter interface {
-	Read(input ...*series.Series)
-	Write() error
-}
+// type Exporter interface {
+// 	Read(input ...*series.Series)
+// 	Write() error
+// }
 
-type Ticker interface{}
+// type Ticker interface{}
 
-type Streamer interface{}
+// type Streamer interface{}
 
-type IndicatorFunc func(*series.Series, ...OptFunc) *series.Series
+// // type IndicatorFunc func(*series.Series, ...OptFunc) *series.Series
 
-func (i IndicatorFunc) Stream(input *stream.Stream, opts ...OptFunc) *stream.Stream {
-	return input
-}
+// func (i IndicatorFunc) Stream(input *stream.Stream, opts ...OptFunc) *stream.Stream {
+// 	return input
+// }
 
-type SeriesFunc func(*series.Series, ...OptFunc) *series.Series
+// type Strategy interface {
+// 	Process(*tick.Tick) *tick.Tick
+// 	Compute(*series.Series) *series.Series
+// }
 
-type StreamFunc func(*stream.Stream, ...OptFunc) *stream.Stream
+// type Provider interface {
+// 	Process(*tick.Tick) *tick.Tick
+// 	Compute(*series.Series) *series.Series
+// }
 
-type Strategy interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
+// type Broker interface {
+// 	Process(*tick.Tick) *tick.Tick
+// 	Compute(*series.Series) *series.Series
+// }
 
-type Provider interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
+// type Storage interface {
+// 	Process(*tick.Tick) *tick.Tick
+// 	Compute(*series.Series) *series.Series
+// }
 
-type Broker interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
+// // Trader is the trading workflow
+// type Trader interface {
+// 	Init(paths ...string) error
+// 	Fill(start, end time.Time, duration time.Duration, providers string) error // backfill historical prices from data providers
+// 	Train(start, end time.Time) error                                          // train the strategy model and save it to storage
+// 	Test(start, end time.Time) error                                           // test the trained model and return the results
+// 	Live(start, end time.Time) error                                           // live testing with real data and mock broker
+// 	Exec(start, end time.Time) error                                           // execute with real data and real broker
+// }
 
-type Storage interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
+// type Node interface {
+// 	ID() string
+// 	Name() string
+// 	Description() string
+// 	Schema() any
 
-// Trader is the trading workflow
-type Trader interface {
-	Init(paths ...string) error
-	Fill(start, end time.Time, duration time.Duration, providers string) error // backfill historical prices from data providers
-	Train(start, end time.Time) error                                          // train the strategy model and save it to storage
-	Test(start, end time.Time) error                                           // test the trained model and return the results
-	Live(start, end time.Time) error                                           // live testing with real data and mock broker
-	Exec(start, end time.Time) error                                           // execute with real data and real broker
-}
+// 	// relationships
+// 	Parents() []string
+// 	Children() []string
 
-type Node interface {
+// 	// lifecycle
+// 	Init() error
+// 	Load() error
+// 	Start() error
+// 	Save() error
+// 	Stop() error
+// }
+
+type Plugin interface {
 	ID() string
 	Name() string
 	Description() string
-	Schema() any
 
-	// relationships
-	Parents() []string
-	Children() []string
-
-	// lifecycle
-	Init() error
-	Load() error
-	Start() error
-	Save() error
-	Stop() error
+	// runtime methods
+	Ready() bool
+	Init(opts ...PluginOptions) error
+	Process(input *tick.Tick) *tick.Tick
+	Compute(input *series.Series) *series.Series
 }
 
-type Plugin interface {
-	Name() string
-	Description() string
-	Schema() Schema
+// type PluginOption func(Options)
 
-	// lifecycle
-	Init() error
-	Load() error
-	Start() error
-	Save() error
-	Stop() error
+type Streamer interface {
+	Stream(input *stream.Stream) *stream.Stream
 }
 
-type PluginOption func(Options)
+type Serieser interface {
+	Series(input *series.Series) *series.Series
+}
 
-
-type Schema interface {}
+type Ticker interface {
+	Tick(input *tick.Tick) *tick.Tick
+}
