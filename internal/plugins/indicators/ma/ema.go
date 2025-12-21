@@ -1,13 +1,11 @@
 package ma
 
 import (
-	"fmt"
+	"math"
 
 	"github.com/rangertaha/gotal/internal"
-	"github.com/rangertaha/gotal/internal/pkg/opt"
-	"github.com/rangertaha/gotal/internal/pkg/series"
-	"github.com/rangertaha/gotal/internal/pkg/sig"
-	"github.com/rangertaha/gotal/internal/pkg/tick"
+	"github.com/rangertaha/gotal/internal/opt"
+	"github.com/rangertaha/gotal/internal/plugins"
 	"github.com/rangertaha/gotal/internal/plugins/indicators"
 )
 
@@ -17,108 +15,75 @@ import (
 // N is the number of days in the EMA
 // EMA(previous day) is the EMA of the previous day
 // Close is the closing price of the current day
+const emaPluginID = "EMA"
+const emaPluginName = "Exponential Moving Average"
+const emaPluginDescription = "Exponential Moving Average is a technical indicator that smooths out price data by giving more weight to recent prices."
+const emaPluginHCL = `
+indicator "ema" {
+  period = 14
+  alpha = 0.1
+}
+`
 
 type ema struct {
-	Name   string  `hcl:"name,optional,default=ema"`    // name of the data series
-	Input  string  `hcl:"input,optional,default=value"` // input field name to compute the EMA
-	Output string  `hcl:"output,optional"`              // output field name for the EMA
-	Period int     `hcl:"period"`                       // period to compute the EMA 
-	Alpha  float64 `hcl:"alpha,optional"`               // alpha to compute the EMA
+	plugins.Plugin
 
-	// series is the series of ticks to compute the EMA
-	series *series.Series
-	// previousEMA stores the previous EMA value for calculation
-	previousEMA float64
-	// initialized tracks if we have enough data to start EMA calculation
-	initialized bool
+	// EMA parameters
+	Period int     `hcl:"period"`         // period to compute the EMA
+	Alpha  float64 `hcl:"alpha,optional"` // alpha to compute the EMA
 }
 
-func NewEMA(opts ...internal.OptFunc) *ema {
-	cfg := opt.New(opts...)
-	period := cfg.Period(14)
+func NewEMA(opts ...internal.PluginOptions) internal.Plugin {
+	params := opt.New(opts...)
 
-	return &ema{
-		Name:   cfg.Name("ema"),
-		Period: period,
-		Input:  cfg.Field("value"),
-		Output: cfg.Output(fmt.Sprintf("%s%d", "ema", period)),
-		Alpha:  cfg.GetFloat("alpha", 2.0/(float64(period)+1.0)),
+	e := &ema{
+		Plugin: plugins.Plugin{
+			PID:      emaPluginID,
+			Title:    emaPluginName,
+			Summary:  emaPluginDescription,
+			Template: emaPluginHCL,
 
-		series:      series.New(cfg.Name("ema")),
-		initialized: false,
-		previousEMA: 0,
+			Fields: []string{params.Get("input", "value").(string)},
+		},
+		Period: params.Get("period", math.NaN()).(int),
+		Alpha:  params.Get("alpha", 2/(float64(params.Get("period", math.NaN()).(int))+1)).(float64),
 	}
+
+	for _, opt := range opts {
+		opt(e)
+	}
+
+	return e
 }
 
-func (i *ema) Compute(input *series.Series) (output *series.Series) {
-	output = series.New(i.Name)
-	i.series.Reset()
+func (i *ema) Init(opts ...internal.PluginOptions) error {
+	// i.Params = opt.New(opts...)
 
-	for _, t := range input.Ticks() {
-		if t := i.Process(t); !t.IsEmpty() {
-			output.Add(t)
-		}
-	}
+	// i.Initialized = false
+	// i.Period = i.Params.Int("period", math.NaN())
+	// i.Alpha = i.Params.Float("alpha", 2/(float64(i.Period)+1))
+	// i.Series = i.Params.Series("series", nil)
+	// i.Fields = []string{i.Params.String("input", "value")} // input field names to compute the EMA
 
-	return
+	return nil
 }
 
-func (i *ema) Process(input *tick.Tick) (output *tick.Tick) {
-
-	// check if the series has the required field
-	if !i.series.HasField(i.Input) {
-		panic(fmt.Sprintf("series is missing field %v", i.Input))
-	}
-
-	// add the input tick to the series
-	i.series.Push(input)
-
-	// create a new empty tick
-	output = tick.New()
-
-	// if the series is not long enough, return false
-	if i.series.Len() > i.Period {
-		// calculate the average
-		output = i.calculate(input)
-
-		// remove the first tick from the series
-		i.series.Pop()
-	}
-
-	return
+func (i *ema) Reset() error {
+	return nil
 }
 
-func (i *ema) calculate(input *tick.Tick) (output *tick.Tick) {
-	// get the current price value
-	currentPrice := input.GetField(i.Input)
+func (i *ema) Ready() bool {
+	return true
+}
 
-	var emaValue float64
+func (i *ema) Compute(input internal.Series) (output internal.Series) {
+	return input
+}
 
-	if !i.initialized {
-		// for the first calculation, use the current price as the initial EMA
-		emaValue = currentPrice
-		i.initialized = true
-	} else {
-		// calculate EMA using the formula: EMA = α * Price + (1 - α) * PreviousEMA
-		emaValue = i.Alpha*currentPrice + (1-i.Alpha)*i.previousEMA
-	}
-
-	// store the current EMA value for the next calculation
-	i.previousEMA = emaValue
-
-	// create a new tick with the EMA value
-	output = tick.New(
-		tick.WithTime(input.Time()),
-		tick.WithDuration(input.Duration()),
-		tick.WithFields(map[string]float64{i.Output: emaValue}),
-		tick.WithTags(input.Tags()),
-		tick.WithSignals(map[sig.Signal]sig.Strength{}))
-
-	return
+func (i *ema) Process(input internal.Tick) (output internal.Tick) {
+	return input
 }
 
 func init() {
-	indicators.Add("ema", func(opts ...internal.OptFunc) internal.Indicator {
-		return NewEMA(opts...)
-	}, indicators.TREND)
+	indicators.Add(emaPluginID, NewEMA, indicators.TREND)
 }

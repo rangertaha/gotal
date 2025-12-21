@@ -3,141 +3,149 @@ package internal
 import (
 	"time"
 
-	"github.com/rangertaha/gotal/internal/pkg/series"
-	"github.com/rangertaha/gotal/internal/pkg/stream"
-	"github.com/rangertaha/gotal/internal/pkg/tick"
+	"github.com/hashicorp/hcl/v2"
 )
 
-// type Plugin interface {
-// 	Init(opts ...OptFunc) error
-// 	Run() error
-// 	Stop() error
-// }
-
-// Options are generic key/value options for any plugin
-type Options interface {
-	// Setters
+type Configurator interface {
 	Set(key string, value any)
-
-	// Getters
 	Get(key string, defaults ...any) any
-	GetInt(key string, defaults ...any) int
-	GetString(key string, defaults ...any) string
-	GetFloat(key string, defaults ...any) float64
-	GetBool(key string, defaults ...any) bool
-	GetDuration(key string, defaults ...any) time.Duration
-	GetTime(key string, defaults ...any) time.Time
-
-	// Objects
-	Period(n ...any) int
-	FastPeriod(n ...any) int
-	SlowPeriod(n ...any) int
-	MAType(s ...any) string
-
-	//
-	Name(s ...any) string
-	Suffix(s ...any) string
-	Field(s ...any) string
-	Fields(s ...any) []string
-	Output(s ...any) string
-	Duration(s ...any) time.Duration
+	Merge(body hcl.Body)
+	Decode(ctx *hcl.EvalContext, cfgs ...string) error
 }
+type ConfigOption func(Configurator) error
 
-type OptFunc func(Options)
+type PluginFunc func(...ConfigOption) (Series, Stream, error)
 
-// type IndicatorFunc IndicatorFn
-
-// type IndicatorFn interface {
-// 	Stream(stream *stream.Stream, opts ...OptFunc) *stream.Stream
-// 	Series(series *series.Series, opts ...OptFunc) *series.Series
-// }
-
-type Indicator interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
-
-type Exporter interface {
-	Read(input ...*series.Series)
-	Write() error
-}
-
-type Ticker interface{}
-
-type Streamer interface{}
-
-type IndicatorFunc func(*series.Series, ...OptFunc) *series.Series
-
-func (i IndicatorFunc) Stream(input *stream.Stream, opts ...OptFunc) *stream.Stream {
-	return input
-}
-
-type SeriesFunc func(*series.Series, ...OptFunc) *series.Series
-
-type StreamFunc func(*stream.Stream, ...OptFunc) *stream.Stream
-
-type Strategy interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
-
-type Provider interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
-
-type Broker interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
-
-type Storage interface {
-	Process(*tick.Tick) *tick.Tick
-	Compute(*series.Series) *series.Series
-}
-
-// Trader is the trading workflow
-type Trader interface {
-	Init(paths ...string) error
-	Fill(start, end time.Time, duration time.Duration, providers string) error // backfill historical prices from data providers
-	Train(start, end time.Time) error                                          // train the strategy model and save it to storage
-	Test(start, end time.Time) error                                           // test the trained model and return the results
-	Live(start, end time.Time) error                                           // live testing with real data and mock broker
-	Exec(start, end time.Time) error                                           // execute with real data and real broker
-}
-
-type Node interface {
+type Plugin interface {
 	ID() string
 	Name() string
 	Description() string
-	Schema() any
-
-	// relationships
-	Parents() []string
-	Children() []string
-
-	// lifecycle
-	Init() error
-	Load() error
-	Start() error
-	Save() error
-	Stop() error
+	// Config(hcl.Body) hcl.Diagnostics
 }
 
-type Plugin interface {
-	Name() string
-	Description() string
-	Schema() Schema
-
-	// lifecycle
+type Initializer interface {
 	Init() error
-	Load() error
-	Start() error
-	Save() error
-	Stop() error
 }
 
-type PluginOption func(Options)
+type Provider interface {
+}
 
+type Processor interface {
+	Process(Tick) Tick
+	Stream() Stream
+	Compute() Series
+	Reset() error
+	Ready() bool
+}
 
-type Schema interface {}
+// type Streamer interface {
+// 	Stream(input Stream) Stream
+// }
+
+// type Serieser interface {
+// 	Series(input Series) Series
+// }
+
+//	type Ticker interface {
+//		Tick(input Tick) Tick
+//	}
+//
+// Series is a collection of ticks
+type Series interface {
+	Name(names ...string) string
+
+	// Crud methods
+	Get(index int) Tick
+	Add(ticks ...Tick) error
+	Delete(index ...int) error
+	Update(ticks ...Tick) error
+
+	// Retrieval methods
+	Ticks(index ...int) []Tick // returns all or a subset of tickskl
+	Head(n int) Series
+	Tail(n int) Series
+	Slice(start, end int) Series
+	Copy() Series
+
+	// // Time methods
+	// Duration() time.Duration
+	// SetDuration(duration time.Duration)
+	// Timestamp() time.Time
+	// TimeRange() (time.Time, time.Time)
+	// Timestamps() []time.Time
+
+	// Collection operations
+	Len() int
+	IsEmpty() bool
+
+	// // Access methods
+	// At(index int) Tick
+	// AtTime(timestamp time.Time) Tick
+
+	// // Collection manipulation
+	// Head(n int) Series
+	// Tail(n int) Series
+	// Slice(start, end int) Series
+	// Copy() Series
+
+	// // Data operations
+	// Pop() Tick
+	// Push(ticks ...Tick)
+
+	// // Utility
+	// Spawn() Series
+
+	// Output methods
+	Print()
+}
+
+// Stream is a channel of ticks
+type Stream interface {
+	// Update(input Stream) Stream
+	// AddError(err error)
+	// Start()               // Starts the stream processing
+	// Stop()                // Stops the stream processing
+	// Push(input Tick)      // Pushes a tick into the stream
+	// Pop() Tick            // Pops the next tick from the stream (if applicable)
+	// Channel() <-chan Tick // Returns the underlying channel of ticks (read-only)
+	// Error() <-chan error  // Returns the underlying error channel (read-only)
+	// Close()               // Closes the stream and all resources
+	// IsClosed() bool       // Checks if the stream is closed
+	// Len() int             // Returns the current length of the stream buffer (if buffered)
+	Ready() bool // Returns true if the stream is ready
+	Print()      // Prints the stream to the console
+}
+
+type Tick interface {
+	// Interface compliance methods
+	Update(input Tick) Tick
+	// AddError(err error)
+
+	// Core identification
+	ID() string
+	SetID(id string)
+
+	// Time methods
+	Time() time.Time
+	SetTime(timestamp time.Time)
+	Epock() int64
+	SetEpock(epock int64)
+	Duration() time.Duration
+	SetDuration(duration time.Duration)
+
+	// Field methods
+	Fields() map[string]float64
+	GetField(key string) float64
+	SetField(key string, value float64)
+	SetFields(fields map[string]float64)
+	HasField(key string) bool
+	HasFields(keys ...string) bool
+	RemoveField(key string)
+	FieldNames() []string
+
+	// Utility methods
+	Len() int
+	IsEmpty() bool
+	Reset()
+	ForEach(fn func(key string, value float64) float64)
+}

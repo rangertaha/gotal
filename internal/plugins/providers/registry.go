@@ -7,28 +7,61 @@ import (
 	"github.com/rangertaha/gotal/internal"
 )
 
-type NewPluginFunc func(opts ...internal.PluginOption) internal.Plugin
+type ProviderPlugin func(opts ...internal.ConfigOption) (internal.Plugin, error)
 
-var PLUGINS = map[string]NewPluginFunc{}
+type ProviderFunc func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error)
 
-func Add(name string, fn NewPluginFunc) error {
-	name = strings.ToLower(name)
+var PROVIDERS = map[string]ProviderPlugin{}
 
-	if _, ok := PLUGINS[name]; ok {
-		return fmt.Errorf("provider %s already exists", name)
+func Add(id string, plugin ProviderPlugin) error {
+	id = strings.ToLower(id)
+
+	if _, ok := PROVIDERS[id]; ok {
+		return fmt.Errorf("indicator %s already exists", id)
 	}
-
-	PLUGINS[name] = fn
+	PROVIDERS[id] = plugin
 
 	return nil
 }
 
-func Get(name string) (NewPluginFunc, error) {
-	name = strings.ToLower(name)
+func Get(id string) (ProviderPlugin, error) {
+	id = strings.ToLower(id)
 
-	if plugin, ok := PLUGINS[name]; ok {
+	if plugin, ok := PROVIDERS[id]; ok {
 		return plugin, nil
 	}
-	return nil, fmt.Errorf("plugin %s not found", name)
+	return nil, fmt.Errorf("provider %s not found", id)
 }
 
+func All() (providerPlugins []ProviderPlugin) {
+	for _, plugin := range PROVIDERS {
+		providerPlugins = append(providerPlugins, plugin)
+	}
+	return providerPlugins
+}
+
+func Func(name string) ProviderFunc {
+	return func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error) {
+
+		plg, err := Get(name)
+		if err != nil {
+			return nil, nil, err
+		}
+		plugin, err := plg(opts...)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if initializer, ok := plugin.(internal.Initializer); ok {
+			if err := initializer.Init(); err != nil {
+				return nil, nil, err
+			}
+		}
+
+		if processor, ok := plugin.(internal.Processor); ok {
+			return processor.Compute(), processor.Stream(), nil
+		}
+
+		return nil, nil, nil
+	}
+}

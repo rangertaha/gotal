@@ -29,8 +29,8 @@ func main() {
 	cli.AppHelpTemplate = fmt.Sprintf(`%s
 EXAMPLE:
 
-   %s init
-   %s new myproject
+   %s create myproject
+   %s update myproject
 
    %s fill  -p polygon -d 1m -s 2025-01-01 
    %s train -s 2025-01-01 -e 2025-01-02
@@ -73,13 +73,13 @@ AUTHOR:
 			return nil
 		},
 		Commands: []*cli.Command{
-			&InitCmd,
-			&NewCmd,
-			&FillCmd,
-			&TrainCmd,
-			&TestCmd,
-			&LiveCmd,
-			&ExecCmd,
+			&CreateCmd,
+			&UpdateCmd,
+			// &FillCmd,
+			// &TrainCmd,
+			// &TestCmd,
+			// &LiveCmd,
+			// &ExecCmd,
 		},
 	}
 

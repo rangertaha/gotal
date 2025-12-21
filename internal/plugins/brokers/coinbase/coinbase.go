@@ -1,41 +1,110 @@
 package coinbase
 
 import (
+	"errors"
+
 	"github.com/rangertaha/gotal/internal"
-	"github.com/rangertaha/gotal/internal/pkg/opt"
-	"github.com/rangertaha/gotal/internal/pkg/series"
-	"github.com/rangertaha/gotal/internal/pkg/tick"
+	"github.com/rangertaha/gotal/internal/plugins"
 	"github.com/rangertaha/gotal/internal/plugins/brokers"
 )
 
-type coinbase struct {
-	Name  string `hcl:"name,optional"`  // name of the data series
-	Input string `hcl:"input,optional"` // field to compute the MACD on
-
-}
-
-func New(opts ...internal.OptFunc) *coinbase {
-	cfg := opt.New(opts...)
-
-	return &coinbase{
-		Name:  cfg.Name("macd"),
-		Input: cfg.Field("value"),
+const (
+	PluginID          = "COINBASE"
+	PluginName        = "Coinbase"
+	PluginDescription = "Coinbase broker"
+	PluginHCL         = `
+broker "coinbase" {
+	api_key = "YOUR_API_KEY"
+	base_url = "https://api.coinbase.com"
+	version = "v2"
+	account {
+		id = "YOUR_ACCOUNT_ID"
+		name = "YOUR_ACCOUNT_NAME"
+		currency = "YOUR_ACCOUNT_CURRENCY"
+		balance = "YOUR_ACCOUNT_BALANCE"
+		allowances {
+			buy = "0" // max amount of money that can be bought	
+			sell = "0" // max amount of money that can be sold
+			transfer = "0" // max amount of money that can be transferred
+			deposit = "0" // max amount of money that can be deposited
+			withdraw = "0" // max amount of money that can be withdrawn
+		}
+		limits {
+			buy = "0" // max amount of money that can be bought	
+			sell = "0" // max amount of money that can be sold
+			transfer = "0" // max amount of money that can be transferred
+			deposit = "0" // max amount of money that can be deposited
+			withdraw = "0" // max amount of money that can be withdrawn
+		}
+		fees {
+			buy = "0" // fee for buying
+			sell = "0" // fee for selling	
+			transfer = "0" // fee for transferring
+			deposit = "0" // fee for depositing
+			withdraw = "0" // fee for withdrawing
+		}
 	}
 }
+`
+	CoinbaseBaseURL = "https://api.coinbase.com"
+	CoinbaseVersion = "v2"
+)
 
-func (i *coinbase) Compute(input *series.Series) (output *series.Series) {
-	output = series.New(i.Name)
+type coinbase struct {
+	plugins.Plugin
 
-	return
+	// connection parameters
+	APIKey  string `hcl:"api_key"`  // API key
+	BaseURL string `hcl:"base_url"` // Base URL
+	Version string `hcl:"version"`  // Version
+
+	// account parameters
+	Accounts []Account `hcl:"accounts,block"` // Accounts
 }
 
-func (i *coinbase) Process(input *tick.Tick) (output *tick.Tick) {
+func New(opts ...internal.PluginOptions) internal.Plugin {
 
-	return
+	c := &coinbase{
+		Plugin: plugins.Plugin{
+			PID:      PluginID,
+			Title:    PluginName,
+			Summary:  PluginDescription,
+			Template: PluginHCL,
+		},
+		BaseURL: CoinbaseBaseURL,
+		Version: CoinbaseVersion,
+	}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	return c
+}
+
+func (c *coinbase) Init(opts ...internal.PluginOptions) error {
+	errs := errors.New("coinbase plugin initialization errors")
+
+	for _, account := range c.Accounts {
+		errs = errors.Join(errs, account.Init(opts...))
+	}
+	return errs
+}
+
+// Compute is not implemented for coinbase plugin
+func (p *coinbase) Compute(input internal.Series) internal.Series {
+	return input
+}
+
+func (p *coinbase) Process(input internal.Tick) internal.Tick {
+	return input
+}
+
+// GetAccounts returns the accounts for the coinbase plugin
+func (p *coinbase) GetAccounts() []Account {
+	return p.Accounts
 }
 
 func init() {
-	brokers.Add("coinbase", func(opts ...internal.OptFunc) internal.Broker {
-		return New(opts...)
-	})
+	brokers.Add(PluginID, New)
 }

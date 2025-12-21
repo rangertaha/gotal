@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/rangertaha/gotal/internal"
-	"github.com/rangertaha/gotal/internal/trader"
 	"github.com/urfave/cli/v2"
 )
 
@@ -66,10 +65,8 @@ var FillCmd = cli.Command{
 		end := cCtx.Timestamp("end")
 		duration := cCtx.Duration("duration")
 		provider := cCtx.String("provider")
+		fmt.Printf("start: %s, end: %s, duration: %s, provider: %s\n", start, end, duration, provider)
 
-		if err := trader.Fill(*start, *end, duration, provider); err != nil {
-			return err
-		}
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
@@ -94,10 +91,8 @@ var TrainCmd = cli.Command{
 		start := cCtx.Timestamp("start")
 		end := cCtx.Timestamp("end")
 
-		// Train a new model
-		if err := trader.Train(*start, *end); err != nil {
-			return err
-		}
+		fmt.Printf("start: %s, end: %s\n", start, end)
+
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
@@ -122,10 +117,7 @@ var TestCmd = cli.Command{
 		start := cCtx.Timestamp("start")
 		end := cCtx.Timestamp("end")
 
-		// Test trading
-		if err := trader.Test(*start, *end); err != nil {
-			return err
-		}
+		fmt.Printf("start: %s, end: %s\n", start, end)
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
@@ -150,10 +142,7 @@ var LiveCmd = cli.Command{
 		start := cCtx.Timestamp("start")
 		end := cCtx.Timestamp("end")
 
-		// Live trading
-		if err := trader.Live(*start, *end); err != nil {
-			return err
-		}
+		fmt.Printf("start: %s, end: %s\n", start, end)
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
@@ -179,9 +168,7 @@ var ExecCmd = cli.Command{
 		end := cCtx.Timestamp("end")
 
 		// Execute a new model
-		if err := trader.Exec(*start, *end); err != nil {
-			return err
-		}
+		fmt.Printf("start: %s, end: %s\n", start, end)
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s

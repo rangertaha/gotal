@@ -19,25 +19,24 @@ import (
 	"fmt"
 
 	"github.com/rangertaha/gotal/internal"
-	"github.com/rangertaha/gotal/internal/trader"
 
 	"github.com/urfave/cli/v2"
 )
 
-var InitCmd = cli.Command{
-	Name:                   "init",
-	Usage:                  "Initialize user configs",
-	Description:            "Initialize and create user config directory",
-	UsageText:              "gota [g opts..] init",
+var CreateCmd = cli.Command{
+	Name:                   "create",
+	Usage:                  "Create a new project",
+	Description:            "Create a new project",
+	UsageText:              "gota [g opts..] create [opts..] [projectname]",
 	UseShortOptionHandling: true,
 	Action: func(cCtx *cli.Context) error {
-		trader.Init(cCtx.String("path"))
+		fmt.Println("Creating project...", cCtx.String("name"))
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
 EXAMPLE:
-   %s init 
-   %s init project/path
+   %s create myproject
+
  
 AUTHOR:
    Rangertaha (rangertaha@gmail.com)
@@ -45,19 +44,20 @@ AUTHOR:
 `, cli.SubcommandHelpTemplate, internal.CLI, internal.CLI),
 }
 
-var NewCmd = cli.Command{
-	Name:                   "new",
-	Usage:                  "Create a new project directory",
-	Description:            "Create a new project directory",
-	UsageText:              "gota [g opts..] new [opts..] [dirname]",
+var UpdateCmd = cli.Command{
+	Name:                   "update",
+	Usage:                  "Update a project",
+	Description:            "Update a project",
+	UsageText:              "gota [g opts..] update [opts..] [projectname]",
 	UseShortOptionHandling: true,
 	Action: func(cCtx *cli.Context) error {
-		cli.ShowSubcommandHelpAndExit(cCtx, 1)
+		fmt.Println("Updating project...", cCtx.String("name"))
 		return nil
 	},
 	CustomHelpTemplate: fmt.Sprintf(`%s
 EXAMPLE:
-   %s new myproject
+   %s update              # update current project
+   %s update myproject    # update specific project directory
  
 AUTHOR:
    Rangertaha (rangertaha@gmail.com)

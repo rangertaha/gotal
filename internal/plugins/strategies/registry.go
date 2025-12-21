@@ -2,34 +2,38 @@ package strategies
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/rangertaha/gotal/internal"
 )
 
-type GroupType string
 
-type NewStrategyFunc func(opts ...internal.OptFunc) internal.Strategy
+type PluginFunc func(opts ...internal.PluginOptions) internal.Plugin
 
-var STRATEGIES = map[string]NewStrategyFunc{}
+var (
+	STRATEGIES = map[string]PluginFunc{}
+)
 
-func Add(name string, fn NewStrategyFunc) error {
-	name = strings.ToLower(name)
+func Add(id string, plugin PluginFunc) error {
 
-	if _, ok := STRATEGIES[name]; ok {
-		return fmt.Errorf("strategy %s already exists", name)
+	if _, ok := STRATEGIES[id]; ok {
+		return fmt.Errorf("strategy %s already exists", id)
 	}
-
-	STRATEGIES[name] = fn
+	STRATEGIES[id] = plugin
 
 	return nil
 }
 
-func Get(name string) (NewStrategyFunc, error) {
-	name = strings.ToLower(name)
-
-	if strategy, ok := STRATEGIES[name]; ok {
-		return strategy, nil
+func Get(id string) (PluginFunc, error) {
+	if plugin, ok := STRATEGIES[id]; ok {
+		return plugin, nil
 	}
-	return nil, fmt.Errorf("strategy %s not found", name)
+	return nil, fmt.Errorf("strategy %s not found", id)
 }
+
+func All() (plugins []internal.Plugin) {
+	for _, plugin := range STRATEGIES {
+		plugins = append(plugins, plugin())
+	}
+	return plugins
+}
+	

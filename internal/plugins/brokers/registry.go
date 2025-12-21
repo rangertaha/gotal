@@ -2,33 +2,34 @@ package brokers
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/rangertaha/gotal/internal"
 )
 
+type PluginFunc func(opts ...internal.PluginOptions) internal.Plugin
 
-type NewBrokerFunc func(opts ...internal.OptFunc) internal.Broker
+var (
+	BROKERS	 = map[string]PluginFunc{}
+)
 
-var BROKERS = map[string]NewBrokerFunc{}
+func Add(id string, plugin PluginFunc) error {
 
-func Add(name string, fn NewBrokerFunc) error {
-	name = strings.ToLower(name)
-
-	if _, ok := BROKERS[name]; ok {
-		return fmt.Errorf("broker %s already exists", name)
+	if _, ok := BROKERS[id]; ok {
+		return fmt.Errorf("broker %s already exists", id)
 	}
-
-	BROKERS[name] = fn
-
 	return nil
 }
 
-func Get(name string) (NewBrokerFunc, error) {
-	name = strings.ToLower(name)
-
-	if broker, ok := BROKERS[name]; ok {
-		return broker, nil
+func Get(id string) (PluginFunc, error) {
+	if plugin, ok := BROKERS[id]; ok {
+		return plugin, nil
 	}
-	return nil, fmt.Errorf("broker %s not found", name)
+	return nil, fmt.Errorf("broker %s not found", id)
+}
+
+func All() (plugins []internal.Plugin) {
+	for _, plugin := range BROKERS {
+		plugins = append(plugins, plugin())
+	}
+	return plugins
 }
