@@ -1,0 +1,44 @@
+package series
+
+
+
+// func Random(name string, start, end time.Time, duration time.Duration, fields []string, opts ...SeriesOptions) (s internal.Series) {
+
+// 	s = &Series{
+// 		name:  name,
+// 		ticks: make([]internal.Tick, 0),
+// 	}
+
+// 	// Generate random ticks between start and end time at given duration intervals
+// 	for t := start; t.Before(end); t = t.Add(duration) {
+// 		// Create new tick with timestamp and duration
+// 		tick := tick.New(
+// 			tick.WithTime(t),
+// 			tick.WithDuration(duration),
+// 		)
+
+// 		// Generate random values for each field
+// 		values := make(map[string]float64)
+// 		for _, field := range fields {
+
+// 			// Generate random value between 1-100
+// 			values[field] = rand.Float64()*99 + 1
+// 		}
+// 		tick.SetFields(values)
+
+// 		// Add tick to series
+// 		s.Add(tick)
+// 	}
+
+// 	// Sort ticks by timestamp
+// 	sort.Slice(s.ticks, func(i, j int) bool {
+// 		return s.ticks[i].Time().Before(s.ticks[j].Time())
+// 	})
+
+// 	for _, opt := range opts {
+// 		opt(s)
+// 	}
+
+// 	return
+
+// }
