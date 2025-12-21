@@ -3,7 +3,6 @@ package coinbase
 import (
 	"errors"
 
-	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/tick"
 )
 
@@ -43,7 +42,7 @@ type fee struct {
 	Withdraw float64 `hcl:"withdraw"` // Fee for withdrawing
 }
 
-func (a *Account) Init(opts ...internal.PluginOptions) error {
+func (a *Account) Init() error {
 	return nil
 }
 

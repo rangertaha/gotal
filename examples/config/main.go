@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Load config from file
-	cfg, err := config.Load("sine.hcl")
+	cfg, err := config.Load("config.hcl")
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}

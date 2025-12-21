@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/rangertaha/gotal/internal"
-	"github.com/rangertaha/gotal/internal/plugins"
 	"github.com/rangertaha/gotal/internal/plugins/strategies"
 )
 
@@ -22,7 +21,6 @@ strategy "macd" {
 )
 
 type macd struct {
-	plugins.Plugin
 
 	// Connection parameters
 	FastPeriod   int `hcl:"fast"`   // Fast period
@@ -30,15 +28,9 @@ type macd struct {
 	SignalPeriod int `hcl:"signal"` // Signal period
 }
 
-func New(opts ...internal.PluginOptions) internal.Plugin {
+func New(opts ...internal.ConfigOption) (internal.Plugin, error) {
 
 	p := &macd{
-		Plugin: plugins.Plugin{
-			PID:      PluginID,
-			Title:    PluginName,
-			Summary:  PluginDescription,
-			Template: PluginHCL,
-		},
 		FastPeriod:   12,
 		SlowPeriod:   26,
 		SignalPeriod: 9,
@@ -46,7 +38,7 @@ func New(opts ...internal.PluginOptions) internal.Plugin {
 	return p
 }
 
-func (p *macd) Init(opts ...internal.PluginOptions) error {
+func (p *macd) Init() error {
 	if p.FastPeriod <= 0 {
 		return errors.New("fast period is required")
 	}

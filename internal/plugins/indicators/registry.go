@@ -2,6 +2,7 @@ package indicators
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/rangertaha/gotal/internal"
 )
@@ -17,14 +18,17 @@ const (
 	OTHER      GroupType = "other"
 )
 
-type PluginFunc func(opts ...internal.PluginOptions) internal.Plugin
+type IndicatorPlugin func(opts ...internal.ConfigOption) (internal.Plugin, error)
+
+type IndicatorFunc func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error)
 
 var (
-	INDICATORS = map[string]PluginFunc{}
-	GROUPS     = map[GroupType][]PluginFunc{}
+	INDICATORS = map[string]IndicatorPlugin{}
+	GROUPS     = map[GroupType][]IndicatorPlugin{}
 )
 
-func Add(id string, plugin PluginFunc, groups ...GroupType) error {
+func Add(id string, plugin IndicatorPlugin, groups ...GroupType) error {
+	id = strings.ToLower(id)
 
 	if _, ok := INDICATORS[id]; ok {
 		return fmt.Errorf("indicator %s already exists", id)
@@ -33,14 +37,16 @@ func Add(id string, plugin PluginFunc, groups ...GroupType) error {
 
 	for _, group := range groups {
 		if _, ok := GROUPS[group]; !ok {
-			GROUPS[group] = []PluginFunc{}
+			GROUPS[group] = []IndicatorPlugin{}
 		}
 		GROUPS[group] = append(GROUPS[group], plugin)
 	}
 	return nil
 }
 
-func Get(id string) (PluginFunc, error) {
+func Get(id string) (IndicatorPlugin, error) {
+	id = strings.ToLower(id)
+
 	if plugin, ok := INDICATORS[id]; ok {
 		return plugin, nil
 	}
@@ -48,17 +54,42 @@ func Get(id string) (PluginFunc, error) {
 }
 
 // Group returns all indicators in a group
-func Group(id GroupType) ([]PluginFunc, error) {
+func Group(id GroupType) ([]IndicatorPlugin, error) {
 	if group, ok := GROUPS[id]; ok {
 		return group, nil
 	}
 	return nil, fmt.Errorf("group %s not found", id)
 }
 
-
-func All() (plugins []internal.Plugin) {
+func All() (indicatorPlugins []IndicatorPlugin) {
 	for _, plugin := range INDICATORS {
-		plugins = append(plugins, plugin())
+		indicatorPlugins = append(indicatorPlugins, plugin)
 	}
-	return plugins
+	return indicatorPlugins
+}
+
+func Func(name string) IndicatorFunc {
+	return func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error) {
+
+		plg, err := Get(name)
+		if err != nil {
+			return nil, nil, err
+		}
+		plugin, err := plg(opts...)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if initializer, ok := plugin.(internal.Initializer); ok {
+			if err := initializer.Init(); err != nil {
+				return nil, nil, err
+			}
+		}
+
+		if processor, ok := plugin.(internal.Processor); ok {
+			return processor.Compute(), processor.Stream(), nil
+		}
+
+		return nil, nil, nil
+	}
 }

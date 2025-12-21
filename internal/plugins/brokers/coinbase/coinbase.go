@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/rangertaha/gotal/internal"
-	"github.com/rangertaha/gotal/internal/plugins"
 	"github.com/rangertaha/gotal/internal/plugins/brokers"
 )
 
@@ -51,7 +50,6 @@ broker "coinbase" {
 )
 
 type coinbase struct {
-	plugins.Plugin
 
 	// connection parameters
 	APIKey  string `hcl:"api_key"`  // API key
@@ -62,15 +60,9 @@ type coinbase struct {
 	Accounts []Account `hcl:"accounts,block"` // Accounts
 }
 
-func New(opts ...internal.PluginOptions) internal.Plugin {
+func New(opts ...internal.ConfigOption) (internal.Plugin, error) {
 
 	c := &coinbase{
-		Plugin: plugins.Plugin{
-			PID:      PluginID,
-			Title:    PluginName,
-			Summary:  PluginDescription,
-			Template: PluginHCL,
-		},
 		BaseURL: CoinbaseBaseURL,
 		Version: CoinbaseVersion,
 	}
@@ -79,14 +71,14 @@ func New(opts ...internal.PluginOptions) internal.Plugin {
 		opt(c)
 	}
 
-	return c
+	return c, nil
 }
 
-func (c *coinbase) Init(opts ...internal.PluginOptions) error {
+func (c *coinbase) Init() error {
 	errs := errors.New("coinbase plugin initialization errors")
 
 	for _, account := range c.Accounts {
-		errs = errors.Join(errs, account.Init(opts...))
+		errs = errors.Join(errs, account.Init())
 	}
 	return errs
 }

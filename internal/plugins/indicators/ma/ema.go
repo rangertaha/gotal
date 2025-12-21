@@ -5,7 +5,6 @@ import (
 
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/opt"
-	"github.com/rangertaha/gotal/internal/plugins"
 	"github.com/rangertaha/gotal/internal/plugins/indicators"
 )
 
@@ -26,25 +25,16 @@ indicator "ema" {
 `
 
 type ema struct {
-	plugins.Plugin
 
 	// EMA parameters
 	Period int     `hcl:"period"`         // period to compute the EMA
 	Alpha  float64 `hcl:"alpha,optional"` // alpha to compute the EMA
 }
 
-func NewEMA(opts ...internal.PluginOptions) internal.Plugin {
+func NewEMA(opts ...internal.ConfigOption) (internal.Plugin, error) {
 	params := opt.New(opts...)
 
 	e := &ema{
-		Plugin: plugins.Plugin{
-			PID:      emaPluginID,
-			Title:    emaPluginName,
-			Summary:  emaPluginDescription,
-			Template: emaPluginHCL,
-
-			Fields: []string{params.Get("input", "value").(string)},
-		},
 		Period: params.Get("period", math.NaN()).(int),
 		Alpha:  params.Get("alpha", 2/(float64(params.Get("period", math.NaN()).(int))+1)).(float64),
 	}
@@ -56,7 +46,7 @@ func NewEMA(opts ...internal.PluginOptions) internal.Plugin {
 	return e
 }
 
-func (i *ema) Init(opts ...internal.PluginOptions) error {
+func (i *ema) Init() error {
 	// i.Params = opt.New(opts...)
 
 	// i.Initialized = false
