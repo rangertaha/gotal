@@ -37,17 +37,6 @@ func New(target interface{}, opts ...internal.ConfigOption) internal.Configurato
 	return o
 }
 
-// func (o *Option) SetSeries(key string, series internal.Series) {
-// 	o.series[key] = series
-// }
-
-// func (o *Option) GetSeries(key string) internal.Series {
-// 	if series, ok := o.series[key]; ok {
-// 		return series
-// 	}
-// 	return nil
-// }
-
 func (o *Option) Get(key string, defaults ...any) any {
 	if value, ok := o.kv[key]; ok {
 		return value
@@ -80,7 +69,6 @@ func (o *Option) Set(key string, value any) {
 	if series, ok := value.(internal.Series); ok {
 		o.series[key] = &series
 	}
-
 
 	o.Decode(config.CtxFunctions, "config.hcl", configBody)
 }
