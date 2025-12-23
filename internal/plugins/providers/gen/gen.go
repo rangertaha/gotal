@@ -2,13 +2,13 @@ package gen
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/opt"
 	"github.com/rangertaha/gotal/internal/plugins/providers"
 	"github.com/rangertaha/gotal/internal/series"
+	"github.com/rangertaha/gotal/internal/stream"
 )
 
 type Generator struct {
@@ -28,50 +28,62 @@ type Generator struct {
 	series internal.Series
 }
 
-func NewGenerator(opts ...internal.ConfigOption) (internal.Plugin, error) {
+func NewGenerator(opts ...internal.ConfigOption) (p internal.Plugin, err error) {
 	// Initial plugin with default values
-	p := &Generator{
-		series: series.New(PluginID),
+	p = &Generator{
+		Name:      PluginID,
+		StartDate: time.Now().AddDate(-10, 0, 0).Unix(),
+		EndDate:   time.Now().Unix(),
+		Interval:  time.Minute * 1,
+		Sine:      []*Sine{},
+		Square:    []*Square{},
+		Triangle:  []*Triangle{},
+		Sawtooth:  []*Sawtooth{},
+		series:    series.New(PluginID),
 	}
+
+	// Create a new configurator with the plugin
 	config := opt.New(p)
 	for _, opt := range opts {
-		if err := opt(config); err != nil {
+		if err = opt(config); err != nil {
 			return nil, err
 		}
 	}
 
-	if err := p.Init(); err != nil {
-		return nil, err
+	if initializer, ok := p.(internal.Initializer); ok {
+		if err = initializer.Init(config); err != nil {
+			return nil, err
+		}
 	}
 
 	return p, nil
 }
 
-func (p *Generator) Init() error {
-	fmt.Printf("Generator init: %+v\n", p)
-	var errs error
+// Init initializes plugin inputs with the provided configurator
+func (p *Generator) Init(config internal.Configurator) (err error) {
 
+	// Initialize sub-plugins
 	for _, sine := range p.Sine {
-		if err := sine.Init(); err != nil {
-			errs = errors.Join(errs, err)
+		if err = sine.Init(config); err != nil {
+			err = errors.Join(err, err)
 		}
 	}
 	for _, square := range p.Square {
-		if err := square.Init(); err != nil {
-			errs = errors.Join(errs, err)
+		if err = square.Init(config); err != nil {
+			err = errors.Join(err, err)
 		}
 	}
 	for _, triangle := range p.Triangle {
-		if err := triangle.Init(); err != nil {
-			errs = errors.Join(errs, err)
+		if err = triangle.Init(config); err != nil {
+			err = errors.Join(err, err)
 		}
 	}
 	for _, sawtooth := range p.Sawtooth {
-		if err := sawtooth.Init(); err != nil {
-			errs = errors.Join(errs, err)
+		if err = sawtooth.Init(config); err != nil {
+			err = errors.Join(err, err)
 		}
 	}
-	return errs
+	return
 }
 
 func (p *Generator) Reset() error {
@@ -82,42 +94,28 @@ func (p *Generator) Ready() bool {
 	return true
 }
 
-func (p *Generator) Compute(input internal.Series) internal.Series {
-	if input.IsEmpty() {
-		input = p.series
-	}
+func (p *Generator) Compute() internal.Series {
+	// Compute the series for each sine wave
 	for _, sine := range p.Sine {
-		input = sine.Compute(input)
+		p.series = sine.Compute(p.series)
 	}
 	for _, square := range p.Square {
-		input = square.Compute(input)
+		p.series = square.Compute(p.series)
 	}
 	for _, triangle := range p.Triangle {
-		input = triangle.Compute(input)
+		p.series = triangle.Compute(p.series)
 	}
 	for _, sawtooth := range p.Sawtooth {
-		input = sawtooth.Compute(input)
+		p.series = sawtooth.Compute(p.series)
 	}
-	return input
+	return p.series
 }
-func (p *Generator) Stream(input internal.Stream) internal.Stream {
-
-	return input
+func (p *Generator) Stream() internal.Stream {
+	return stream.New(p.Name)
 }
 
-func (p *Generator) Process(input internal.Stream) internal.Stream {
-	// for _, sine := range p.Sine {
-	// 	input.Update(sine.Process(input))
-	// }
-	// for _, square := range p.Square {
-	// 	input.Update(square.Process(input))
-	// }
-	// for _, triangle := range p.Triangle {
-	// 	input.Update(triangle.Process(input))
-	// }
-	// for _, sawtooth := range p.Sawtooth {
-	// 	input.Update(sawtooth.Process(input))
-	// }
+func (p *Generator) Process(input internal.Tick) internal.Tick {
+
 	return input
 }
 

@@ -15,7 +15,7 @@ type Triangle struct {
 	Offset    float64 `hcl:"offset,optional"`    // Offset (default: 0.0)
 }
 
-func (s *Triangle) Init() error {
+func (s *Triangle) Init(config internal.Configurator) (err error) {
 	fmt.Printf("Triangle init: %+v\n", s)
 	return nil
 }

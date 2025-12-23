@@ -19,7 +19,7 @@ type Sine struct {
 	Duration  time.Duration `hcl:"duration,optional"`  // Duration (default: 1s)
 }
 
-func (s *Sine) Init() error {
+func (s *Sine) Init(config internal.Configurator) (err error) {
 	fmt.Printf("Sine init: %+v\n", s)
 	return nil
 }

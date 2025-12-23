@@ -9,8 +9,6 @@ import (
 
 type StrategyPlugin func(opts ...internal.ConfigOption) (internal.Plugin, error)
 
-type StrategyFunc func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error)
-
 var (
 	STRATEGIES = map[string]StrategyPlugin{}
 )
@@ -42,28 +40,14 @@ func All() (strategyPlugins []StrategyPlugin) {
 	return strategyPlugins
 }
 
-func Func(name string) StrategyFunc {
-	return func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error) {
+func Batch(name string) internal.BatchFunc {
+	return func(opts ...internal.ConfigOption) (internal.Series, error) {
+		return nil, nil
+	}
+}
 
-		plg, err := Get(name)
-		if err != nil {
-			return nil, nil, err
-		}
-		plugin, err := plg(opts...)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if initializer, ok := plugin.(internal.Initializer); ok {
-			if err := initializer.Init(); err != nil {
-				return nil, nil, err
-			}
-		}
-
-		if processor, ok := plugin.(internal.Processor); ok {
-			return processor.Compute(), processor.Stream(), nil
-		}
-
-		return nil, nil, nil
+func Stream(name string) internal.StreamFunc {
+	return func(opts ...internal.ConfigOption) (internal.Stream, error) {
+		return nil, nil
 	}
 }

@@ -68,28 +68,17 @@ func All() (indicatorPlugins []IndicatorPlugin) {
 	return indicatorPlugins
 }
 
-func Func(name string) IndicatorFunc {
-	return func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error) {
 
-		plg, err := Get(name)
-		if err != nil {
-			return nil, nil, err
-		}
-		plugin, err := plg(opts...)
-		if err != nil {
-			return nil, nil, err
-		}
 
-		if initializer, ok := plugin.(internal.Initializer); ok {
-			if err := initializer.Init(); err != nil {
-				return nil, nil, err
-			}
-		}
 
-		if processor, ok := plugin.(internal.Processor); ok {
-			return processor.Compute(), processor.Stream(), nil
-		}
+func Batch(name string) internal.BatchFunc {
+	return func(opts ...internal.ConfigOption) (internal.Series, error) {
+		return nil, nil
+	}
+}
 
-		return nil, nil, nil
+func Stream(name string) internal.StreamFunc {
+	return func(opts ...internal.ConfigOption) (internal.Stream, error) {
+		return nil, nil
 	}
 }

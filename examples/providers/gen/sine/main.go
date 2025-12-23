@@ -3,40 +3,47 @@ package main
 import (
 	"fmt"
 
-	batch "github.com/rangertaha/gotal/internal/funcs/stream"
+	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/opt"
-	"github.com/rangertaha/gotal/internal/plugins/providers"
 	_ "github.com/rangertaha/gotal/internal/plugins/providers/all"
+	"github.com/rangertaha/gotal/pkg/batch"
 )
 
 func main() {
-	// get a new generator with the sine.hcl config file
-	sineSeries, _ := batch.Batch(opt.WithFile("sine.hcl"))
+	var err error
+	var dataset internal.Series
 
-	sineSeries.Print()
+	fmt.Println("1. -----------------------------------------------------------------------------")
+	{
+		if dataset, err = batch.Generator(opt.WithFile("sine.hcl")); dataset != nil {
+			dataset.Print()
+		}
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+	}
 
-	// get a new generator with the config content
-	sineSeries2, _ := batch.Batch("gen")(opt.WithHCL(`
+	fmt.Println("2. -----------------------------------------------------------------------------")
+	{
+		if dataset, err = batch.Generator(opt.WithHCL(`
 		sine "price" {
 			periods = 100
 			amplitude = 1.0
 			frequency = 1.0
 			phase = 0
 			offset = 0
+		}`)); dataset != nil {
+			dataset.Print()
 		}
-	`))
-	if err2 != nil {
-		fmt.Println("Failed to get generator function", err2)
-		return
+
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
 	}
 
-	fmt.Println("Generator series: ", genSeries2)
-	fmt.Println("Generator stream: ", genStream2)
-	fmt.Println("Generator series: ", err2)
-	fmt.Println("-----------------------------------------------------------------------------")
-
-	// get a new generator with the config content
-	genSeries3, genStream3, err3 := gotal.Generator(opt.WithJSON(`
+	fmt.Println("3. -----------------------------------------------------------------------------")
+	{
+		if dataset, err = batch.Generator(opt.WithJSON(`
 		{
 			"name": "prices",
 			"start": 1609459200,
@@ -51,46 +58,37 @@ func main() {
 					"offset": 0
 				}
 			}
+		}`)); dataset != nil {
+			dataset.Print()
 		}
-		`))
-	if err3 != nil {
-		fmt.Println("Failed to get generator function", err3)
-		return
+
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
 	}
 
-	// genSeries.Print()
-	fmt.Println("Generator series: ", genSeries3)
-	fmt.Println("Generator stream: ", genStream3)
-	fmt.Println("Generator series: ", err3)
-	fmt.Println("-----------------------------------------------------------------------------")
-
-	// get a new generator with the config content
-	genSeries4, genStream4, err4 := gotal.Generator(
-		opt.With("start", "1609459200"),
-		opt.With("end", "1609459200"),
-		opt.With("interval", "1"),
-		opt.With("sine", "1m"),
-		opt.With("name", "new_series"),
-		opt.WithHCL(`
+	fmt.Println("4. -----------------------------------------------------------------------------")
+	{
+		if dataset, err = batch.Generator(
+			opt.With("start", "1609459200"),
+			opt.With("end", "1609459200"),
+			opt.With("interval", "1"),
+			opt.With("sine", "1m"),
+			opt.With("name", "new_series"),
+			opt.WithHCL(`
 		  sine "volume" {
 			periods = 100
 			amplitude = 1.0
 			frequency = 1.0
 			phase = 0
 			offset = 0
-		}`),
-	)
-	if err4 != nil {
-		fmt.Println("Failed to get generator function", err4)
-		return
+		}`)); dataset != nil {
+			dataset.Print()
+		}
+
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
 	}
-
-	fmt.Println("Generator series: ", genSeries4)
-	fmt.Println("Generator stream: ", genStream4)
-	fmt.Println("Generator series: ", err4)
-	fmt.Println("-----------------------------------------------------------------------------")
-	//-----------------------------------------------------------------------------
-
-	//-----------------------------------------------------------------------------
 
 }

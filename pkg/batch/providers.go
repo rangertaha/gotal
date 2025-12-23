@@ -11,7 +11,7 @@ var (
 )
 
 func init() {
-	Generator = providers.Batch("gen")
+	Generator = providers.Batch("generator")
 	// Polygon = providers.Func("polygon")
 	// Yahoo = providers.Func("yahoo")
 	// Binance = providers.Func("binance")

@@ -11,7 +11,7 @@ var (
 )
 
 func init() {
-	SMA = indicators.Batch("ema")
+	SMA = indicators.Batch("sma")
 	EMA = indicators.Batch("ema")
 	RSI = indicators.Batch("rsi")
 	MACD = indicators.Batch("macd")

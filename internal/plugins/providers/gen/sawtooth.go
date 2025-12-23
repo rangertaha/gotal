@@ -15,7 +15,7 @@ type Sawtooth struct {
 	Offset    float64 `hcl:"offset,optional"`    // Offset (default: 0.0)
 }
 
-func (s *Sawtooth) Init() error {
+func (s *Sawtooth) Init(config internal.Configurator) (err error) {
 	fmt.Printf("Sawtooth init: %+v\n", s)
 	return nil
 }

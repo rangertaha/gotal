@@ -9,11 +9,8 @@ import (
 
 type BrokerPlugin func(opts ...internal.ConfigOption) (internal.Plugin, error)
 
-type BrokerFunc func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error)
+var BROKERS = map[string]BrokerPlugin{}
 
-var (
-	BROKERS = map[string]BrokerPlugin{}
-)
 
 func Add(id string, plugin BrokerPlugin) error {
 	id = strings.ToLower(id)
@@ -42,28 +39,45 @@ func All() (brokerPlugins []BrokerPlugin) {
 	return brokerPlugins
 }
 
-func Func(name string) BrokerFunc {
-	return func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error) {
+
+func Batch(name string) internal.BatchFunc {
+	return func(opts ...internal.ConfigOption) (internal.Series, error) {
 
 		plg, err := Get(name)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		plugin, err := plg(opts...)
 		if err != nil {
-			return nil, nil, err
-		}
-
-		if initializer, ok := plugin.(internal.Initializer); ok {
-			if err := initializer.Init(); err != nil {
-				return nil, nil, err
-			}
+			return nil,  err
 		}
 
 		if processor, ok := plugin.(internal.Processor); ok {
-			return processor.Compute(), processor.Stream(), nil
+			return processor.Compute(), nil
 		}
 
-		return nil, nil, nil
+		return nil, nil
+	}
+}
+
+func Stream(name string) internal.StreamFunc {
+	return func(opts ...internal.ConfigOption) (internal.Stream, error) {
+
+
+		plg, err := Get(name)
+		if err != nil {
+			return nil, err
+		}
+		plugin, err := plg(opts...)
+		if err != nil {
+			return nil,  err
+		}
+
+
+		if processor, ok := plugin.(internal.Processor); ok {
+			return processor.Stream(), nil
+		}
+
+		return nil, nil
 	}
 }

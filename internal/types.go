@@ -27,7 +27,7 @@ type Plugin interface {
 }
 
 type Initializer interface {
-	Init() error
+	Init(Configurator) error
 }
 
 type Provider interface {

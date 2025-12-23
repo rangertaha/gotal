@@ -15,7 +15,7 @@ type Square struct {
 	Offset    float64 `hcl:"offset,optional"`    // Offset (default: 0.0)
 }
 
-func (s *Square) Init() error {
+func (s *Square) Init(config internal.Configurator) (err error) {
 	fmt.Printf("Square init: %+v\n", s)
 	return nil
 }
