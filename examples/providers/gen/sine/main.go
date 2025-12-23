@@ -3,38 +3,27 @@ package main
 import (
 	"fmt"
 
-	"github.com/rangertaha/gotal"
+	batch "github.com/rangertaha/gotal/internal/funcs/stream"
 	"github.com/rangertaha/gotal/internal/opt"
+	"github.com/rangertaha/gotal/internal/plugins/providers"
 	_ "github.com/rangertaha/gotal/internal/plugins/providers/all"
 )
 
 func main() {
 	// get a new generator with the sine.hcl config file
-	genSeries, genStream, err := gotal.Generator(opt.WithFile("sine.hcl"))
-	if err != nil {
-		fmt.Println("Failed to get generator function")
-		return
-	}
+	sineSeries, _ := batch.Batch(opt.WithFile("sine.hcl"))
 
-	fmt.Println("Generator series: ", genSeries)
-	fmt.Println("Generator stream: ", genStream)
-	fmt.Println("Generator series: ", err)
-	fmt.Println("-----------------------------------------------------------------------------")
+	sineSeries.Print()
 
 	// get a new generator with the config content
-	genSeries2, genStream2, err2 := gotal.Generator(opt.WithHCL(`
-name = "prices"
-start = date("2021/01/01")
-end = date("2021/01/02")
-interval = minutes(1)
-
-sine "price" {
-  periods   = 100            // Number of periods (points)
-  amplitude = 1.0            // Amplitude of the sine wave
-  frequency = 1.0            // Frequency of the sine wave
-  phase     = 0.0            // Phase offset (radians)
-  offset    = 0.0            // Value offset
-}
+	sineSeries2, _ := batch.Batch("gen")(opt.WithHCL(`
+		sine "price" {
+			periods = 100
+			amplitude = 1.0
+			frequency = 1.0
+			phase = 0
+			offset = 0
+		}
 	`))
 	if err2 != nil {
 		fmt.Println("Failed to get generator function", err2)

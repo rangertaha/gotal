@@ -1,14 +1,15 @@
-package gotal
+package batch
 
 import (
 	"github.com/rangertaha/gotal/internal/plugins/brokers"
 	_ "github.com/rangertaha/gotal/internal/plugins/brokers/all"
 )
 
+
 var (
-	Coinbase brokers.BrokerFunc
+	Coinbase internal.BatchFunc
 )
 
 func init() {
-	Coinbase = brokers.Func("coinbase")
+	Coinbase = brokers.Batch("coinbase")
 }

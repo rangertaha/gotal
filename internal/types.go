@@ -16,11 +16,14 @@ type ConfigOption func(Configurator) error
 
 type PluginFunc func(...ConfigOption) (Series, Stream, error)
 
+type BatchFunc func(...ConfigOption) (Series, error)
+
+type StreamFunc func(...ConfigOption) (Stream, error)
+
 type Plugin interface {
 	ID() string
-	Name() string
+	Title() string
 	Description() string
-	// Config(hcl.Body) hcl.Diagnostics
 }
 
 type Initializer interface {

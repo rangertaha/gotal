@@ -1,16 +1,17 @@
-package gotal
+package batch
 
 import (
+	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/plugins/providers"
 	_ "github.com/rangertaha/gotal/internal/plugins/providers/all"
 )
 
 var (
-	Generator, Polygon, Yahoo, Binance providers.ProviderFunc
+	Generator, Polygon, Yahoo, Binance internal.BatchFunc
 )
 
 func init() {
-	Generator = providers.Func("gen")
+	Generator = providers.Batch("gen")
 	// Polygon = providers.Func("polygon")
 	// Yahoo = providers.Func("yahoo")
 	// Binance = providers.Func("binance")

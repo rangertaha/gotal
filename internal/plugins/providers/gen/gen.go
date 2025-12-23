@@ -5,25 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	_ "embed"
-
 	"github.com/rangertaha/gotal/internal"
 	"github.com/rangertaha/gotal/internal/opt"
 	"github.com/rangertaha/gotal/internal/plugins/providers"
 	"github.com/rangertaha/gotal/internal/series"
 )
 
-const (
-	PluginID          = "gen"
-	PluginName        = "Generator"
-	PluginDescription = "Generates mock data for testing and development"
-)
-
-//go:embed gen.hcl
-var pluginHCLTemplate string
-
 type Generator struct {
-	SeriesName string `hcl:"name,optional"` // Series name of the generator
+	Name string `hcl:"name,optional"` // Series name of the generator
 
 	// Timing parameters (optional)
 	StartDate int64         `hcl:"start,optional"`    // Start time
@@ -51,7 +40,10 @@ func NewGenerator(opts ...internal.ConfigOption) (internal.Plugin, error) {
 		}
 	}
 
-	
+	if err := p.Init(); err != nil {
+		return nil, err
+	}
+
 	return p, nil
 }
 
@@ -80,18 +72,6 @@ func (p *Generator) Init() error {
 		}
 	}
 	return errs
-}
-
-func (p *Generator) ID() string {
-	return PluginID
-}
-
-func (p *Generator) Name() string {
-	return PluginName
-}
-
-func (p *Generator) Description() string {
-	return PluginDescription
 }
 
 func (p *Generator) Reset() error {

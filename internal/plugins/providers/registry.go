@@ -11,6 +11,10 @@ type ProviderPlugin func(opts ...internal.ConfigOption) (internal.Plugin, error)
 
 type ProviderFunc func(opts ...internal.ConfigOption) (internal.Series, internal.Stream, error)
 
+type BatchFunc func(opts ...internal.ConfigOption) (internal.Series, error)
+
+type StreamFunc func(opts ...internal.ConfigOption) (internal.Stream, error)
+
 var PROVIDERS = map[string]ProviderPlugin{}
 
 func Add(id string, plugin ProviderPlugin) error {
@@ -63,5 +67,17 @@ func Func(name string) ProviderFunc {
 		}
 
 		return nil, nil, nil
+	}
+}
+
+func Batch(name string) internal.BatchFunc {
+	return func(opts ...internal.ConfigOption) (internal.Series, error) {
+		return nil, nil
+	}
+}
+
+func Stream(name string) internal.StreamFunc {
+	return func(opts ...internal.ConfigOption) (internal.Stream, error) {
+		return nil, nil
 	}
 }

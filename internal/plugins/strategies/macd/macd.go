@@ -4,28 +4,25 @@ import (
 	"errors"
 
 	"github.com/rangertaha/gotal/internal"
+	"github.com/rangertaha/gotal/internal/opt"
 	"github.com/rangertaha/gotal/internal/plugins/strategies"
-)
-
-const (
-	PluginID          = "MACD"
-	PluginName        = "Moving Average Convergence Divergence."
-	PluginDescription = "MAC is used to identify trends in the price of a security."
-	PluginHCL         = `
-strategy "macd" {
-	fast = 12  # Fast period
-	slow = 26  # Slow period
-	signal = 9  # Signal period
-}
-`
+	"github.com/rangertaha/gotal/internal/series"
 )
 
 type macd struct {
+	Name string `hcl:"name,optional"` // name of the strategy
 
-	// Connection parameters
-	FastPeriod   int `hcl:"fast"`   // Fast period
-	SlowPeriod   int `hcl:"slow"`   // Slow period
-	SignalPeriod int `hcl:"signal"` // Signal period
+	// connection parameters
+	FastPeriod   int `hcl:"fast"`    // Fast period
+	SlowPeriod   int `hcl:"slow"`    // Slow period
+	SignalPeriod int `hcl:"signal"`  // Signal period
+
+	Source  string `hcl:"source,optional"`  // Source field name (e.g. "close", "open", "high", "low", "volume")
+	OMAType string `hcl:"omatype,optional"` // Moving average type for the oscillator (e.g. "ema", "sma", "wma")
+	SMAType string `hcl:"smatype,optional"` // Moving average type for the signal (e.g. "ema", "sma", "wma")
+
+	// series internal state
+	series internal.Series
 }
 
 func New(opts ...internal.ConfigOption) (internal.Plugin, error) {
@@ -34,8 +31,22 @@ func New(opts ...internal.ConfigOption) (internal.Plugin, error) {
 		FastPeriod:   12,
 		SlowPeriod:   26,
 		SignalPeriod: 9,
+
+		series: series.New(PluginID),
 	}
-	return p
+
+	config := opt.New(p)
+	for _, opt := range opts {
+		if err := opt(config); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := p.Init(); err != nil {
+		return nil, err
+	}
+
+	return p, nil
 }
 
 func (p *macd) Init() error {
