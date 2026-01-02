@@ -152,7 +152,7 @@ func WithParams(params ...any) internal.ConfigOption {
 	}
 }
 
-func With(key string, value string) internal.ConfigOption {
+func With(key string, value any) internal.ConfigOption {
 	return func(conf internal.Configurator) error {
 		conf.Set(key, value)
 		return nil

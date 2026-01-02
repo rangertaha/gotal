@@ -1,12 +1,5 @@
 package series
 
-import (
-	"time"
-
-	"github.com/rangertaha/gotal/internal"
-	"github.com/rangertaha/gotal/internal/tick"
-)
-
 type Option func(*Series)
 
 // type SeriesOptions func(*Series) error
@@ -33,22 +26,22 @@ func WithName(name string) Option {
 // 	}
 // }
 
-func WithTicks(ticks ...internal.Tick) Option {
-	return func(s *Series) { s.ticks = ticks }
-}
+// func WithTicks(ticks ...internal.Tick) Option {
+// 	return func(s *Series) { s.ticks = ticks }
+// }
 
-func WithFields(fields ...map[string]float64) Option {
-	return func(s *Series) {
-		for _, field := range fields {
-			tick := tick.New()
-			for k, v := range field {
-				if k == "time" {
-					tick.SetTime(time.Unix(int64(v), 0))
-				} else {
-					tick.SetField(k, v)
-				}
-			}
-			s.Add(tick)
-		}
-	}
-}
+// func WithFields(fields ...map[string]float64) Option {
+// 	return func(s *Series) {
+// 		for _, field := range fields {
+// 			tick := tick.New()
+// 			for k, v := range field {
+// 				if k == "time" {
+// 					tick.SetTime(time.Unix(int64(v), 0))
+// 				} else {
+// 					tick.SetField(k, v)
+// 				}
+// 			}
+// 			s.Add(tick)
+// 		}
+// 	}
+// }

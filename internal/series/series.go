@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/rangertaha/gotal/internal"
+	"github.com/rangertaha/gotal/internal/plot"
 )
 
 // Series represents a collection of market events, capturing the most granular form of market data.
@@ -117,4 +118,17 @@ func (s *Series) IsEmpty() bool {
 // Len returns the number of ticks in the Series collection.
 func (s *Series) Len() int {
 	return len(s.ticks)
+}
+
+// Create a new plot
+func (s *Series) Plot(fields ...string) internal.Plot {
+	p := plot.New(s)
+
+	if len(fields) > 0 {
+		p.SetFields(fields...)
+	} else {
+		p.SetFields(s.FieldNames()...)
+	}
+
+	return p
 }

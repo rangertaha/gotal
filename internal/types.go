@@ -2,15 +2,22 @@ package internal
 
 import (
 	"time"
-
-	"github.com/hashicorp/hcl/v2"
 )
 
 type Configurator interface {
 	Set(key string, value any)
 	Get(key string, defaults ...any) any
-	Merge(body hcl.Body)
-	Decode(ctx *hcl.EvalContext, cfgs ...string) error
+
+	// decoding methods
+	GetStr(key string, defaults ...string) string
+	GetInt(key string, defaults ...int) int
+	GetFloat(key string, defaults ...float32) float32
+	GetBool(key string, defaults ...bool) bool
+	GetTime(key string, defaults ...time.Time) time.Time
+	GetDuration(key string, defaults ...time.Duration) time.Duration
+
+	// Dataset
+	GetSeries(key string, defaults ...Series) Series
 }
 type ConfigOption func(Configurator) error
 
@@ -18,19 +25,19 @@ type PluginFunc func(...ConfigOption) (Series, Stream, error)
 
 type BatchFunc func(...ConfigOption) (Series, error)
 
-type StreamFunc func(...ConfigOption) (Stream, error)
+type IndicatorFunc func(Series, ...ConfigOption) (Series, error)
 
-type Plugin interface {
-	ID() string
-	Title() string
-	Description() string
-}
+type StreamFunc func(...ConfigOption) (Stream, error)
 
 type Initializer interface {
 	Init(Configurator) error
 }
 
-type Provider interface {
+type Indicator interface {
+	Reset() error
+	Ready() bool
+	Process(Tick) Tick
+	Compute(Series) Series
 }
 
 type Processor interface {
@@ -70,6 +77,8 @@ type Series interface {
 	Slice(start, end int) Series
 	Copy() Series
 
+	FieldNames() []string
+
 	// // Time methods
 	// Duration() time.Duration
 	// SetDuration(duration time.Duration)
@@ -100,6 +109,8 @@ type Series interface {
 
 	// Output methods
 	Print()
+	Save(filename ...string) error
+	Plot(fields ...string) Plot
 }
 
 // Stream is a channel of ticks
@@ -151,4 +162,9 @@ type Tick interface {
 	IsEmpty() bool
 	Reset()
 	ForEach(fn func(key string, value float64) float64)
+}
+
+type Plot interface {
+	Show(width, height int) error
+	Save(filename string, width, height int) error
 }

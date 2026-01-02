@@ -30,19 +30,19 @@ package series
 // 	return column
 // }
 
-// // Fields retrieves a map of field names to slices of float64 values from all ticks.
-// // Returns a map where the keys are field names and the values are slices of field values in chronological order.
-// func (t *Series) FieldMap() map[string][]float64 {
-// 	fields := make(map[string][]float64)
+// Fields retrieves a map of field names to slices of float64 values from all ticks.
+// Returns a map where the keys are field names and the values are slices of field values in chronological order.
+func (t *Series) FieldMap() map[string][]float64 {
+	fields := make(map[string][]float64)
 
-// 	// Add the timestamp field
-// 	for _, tick := range t.ticks {
-// 		for k, v := range tick.Fields() {
-// 			fields[k] = append(fields[k], v)
-// 		}
-// 	}
-// 	return fields
-// }
+	// Add the timestamp field
+	for _, tick := range t.ticks {
+		for k, v := range tick.Fields() {
+			fields[k] = append(fields[k], v)
+		}
+	}
+	return fields
+}
 
 // func (t *Series) Columns() map[string][]interface{} {
 // 	columns := make(map[string][]interface{})
@@ -60,12 +60,12 @@ package series
 // 	return columns
 // }
 
-// func (t *Series) FieldNames() (names []string) {
-// 	for name := range t.FieldMap() {
-// 		names = append(names, name)
-// 	}
-// 	return names
-// }
+func (t *Series) FieldNames() (names []string) {
+	for name := range t.FieldMap() {
+		names = append(names, name)
+	}
+	return names
+}
 
 // func (t *Series) FieldLen(field string) int {
 // 	return len(t.Field(field))
