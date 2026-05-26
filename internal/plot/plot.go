@@ -16,86 +16,75 @@ type Plot struct {
 	title  string
 	xLabel string
 	yLabel string
-	height vg.Length
-	width  vg.Length
 	fields []string
-	series internal.Series
+	series internal.TimeSeries
 	plot   *plot.Plot
 }
 
-func New(series internal.Series) *Plot {
-	return &Plot{
+func New(series internal.TimeSeries, fields ...string) *Plot {
+	if len(fields) == 0 {
+		fields = series.Fields().Names()
+	}
+	p := &Plot{
 		series: series,
 		title:  series.Name(),
 		xLabel: "Time",
 		yLabel: "Values",
-		height: 4 * vg.Inch,
-		width:  8 * vg.Inch,
-		fields: series.FieldNames(),
+		fields: fields,
 		plot:   plot.New(),
 	}
-}
+	p.plot.Title.Text = p.title
+	p.plot.X.Label.Text = p.xLabel
+	p.plot.Y.Label.Text = p.yLabel
 
-func (p *Plot) SetTitle(title string) {
-	p.plot.Title.Text = title
-}
-
-func (p *Plot) SetXLabel(xLabel string) {
-	p.plot.X.Label.Text = xLabel
-}
-
-func (p *Plot) SetYLabel(yLabel string) {
-	p.plot.Y.Label.Text = yLabel
-}
-
-func (p *Plot) SetFields(fields ...string) {
-	p.fields = fields
 	lines := []any{}
 	for _, field := range fields {
-		lines = append(lines, field, p.getPoints(field))
+		lines = append(lines, field, p.points(field))
 	}
-	err := plotutil.AddLinePoints(p.plot, lines...)
-	if err != nil {
-		panic(err)
+	if len(lines) > 0 {
+		if err := plotutil.AddLinePoints(p.plot, lines...); err != nil {
+			panic(err)
+		}
 	}
-
+	return p
 }
 
-func (p *Plot) getPoints(field string) plotter.XYs {
-	pts := make(plotter.XYs, p.series.Len())
-	for i, tick := range p.series.Ticks() {
-		if tick.HasField(field) && !tick.IsEmpty() {
-			pts[i].X = float64(tick.Epock())
-			pts[i].Y = tick.GetField(field)
+func (p *Plot) points(field string) plotter.XYs {
+	ticks := p.series.Ticks()
+	vec := p.series.Fields().Get(field)
+	var values []float64
+	if vec != nil {
+		values = vec.Values()
+	}
+	pts := make(plotter.XYs, 0, len(ticks))
+	for i, tick := range ticks {
+		x := float64(tick.Time().Unix())
+		var y float64
+		if i < len(values) {
+			y = values[i]
+		} else if vals, ok := tick.Fields(field); ok {
+			y = vals[field]
 		}
+		pts = append(pts, plotter.XY{X: x, Y: y})
 	}
 	return pts
 }
 
 func (p *Plot) Show(width, height int) error {
-	// Save plot as temporary PNG file
 	tmpfile, err := os.CreateTemp("/tmp", fmt.Sprintf("*-plot-%s.png", p.series.Name()))
 	if err != nil {
 		return err
 	}
 	defer tmpfile.Close()
 
-	// Save plot to temporary file
 	if err := p.Save(tmpfile.Name(), width, height); err != nil {
 		return err
 	}
 
-	// Open temporary image using 'xdg-open' on Linux (floating window via default program)
 	cmd := exec.Command("xdg-open", tmpfile.Name())
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return cmd.Start()
 }
 
-// Save plot to file
 func (p *Plot) Save(path string, width, height int) error {
 	return p.plot.Save(vg.Length(width)*vg.Inch, vg.Length(height)*vg.Inch, path)
 }

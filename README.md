@@ -1,163 +1,181 @@
-# Gotal - Golang Technical Analysis Library
+# gotal — Go Technical Analysis
 
-## ⚠️ **UNDER DEVELOPMENT** ⚠️
+[![Go Report Card](https://goreportcard.com/badge/github.com/rangertaha/gotal?style=flat-square)](https://goreportcard.com/report/github.com/rangertaha/gotal)
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/rangertaha/gotal)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/rangertaha/gotal)](https://pkg.go.dev/github.com/rangertaha/gotal)
+[![Release](https://img.shields.io/github/release/rangertaha/gotal.svg?style=flat-square)](https://github.com/rangertaha/gotal/releases/latest)
 
+> **Status: UNDER DEVELOPMENT.** API may still change. Educational and research use only — see [Disclaimer](#disclaimer).
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/rangertaha/gotal?style=flat-square)](https://goreportcard.com/report/github.com/rangertaha/gotal) [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/rangertaha/gotal) [![PkgGoDev](https://pkg.go.dev/badge/github.com/rangertaha/gotal)](https://pkg.go.dev/github.com/rangertaha/gotal) [![Release](https://img.shields.io/github/release/rangertaha/gotal.svg?style=flat-square)](https://github.com/rangertaha/gotal/releases/latest)
+`gotal` is a technical-analysis library for Go. It provides indicators that work in two modes:
 
-Gotal is a technical analysis library for Go that provides a framework for creating, training, testing, and running algorithmic trading stratagies. It includes technical indicators, data providers, broker integrations, and a CLI tool for managing the workflow.
+- **Batch** — run an indicator over a historical `TimeSeries`.
+- **Streaming** — pipe live ticks through an indicator using channels.
 
-## ⚠️ **IMPORTANT DISCLAIMER - READ BEFORE USE** ⚠️
+Both modes share the same registered implementations, so a streaming EMA produces the same values as a batch EMA on the same data.
 
-**THIS SOFTWARE IS FOR EDUCATIONAL AND RESEARCH PURPOSES ONLY. NOT FINANCIAL ADVICE.**
-
-- 🚨 **Trading and investing involve significant risk of loss**
-- 🚨 **You can lose ALL of your invested capital**
-- 🚨 **Past performance does not guarantee future results**
-- 🚨 **This software is provided "AS IS" without any warranties**
-- 🚨 **The author(s) are NOT LIABLE for any financial losses incurred**
-
-**By using this software, you acknowledge that:**
-- You understand the risks involved in trading/investing
-- You are using this software at your own risk
-- Any trading decisions are your own responsibility
-- You should consult with qualified financial professionals before making investment decisions
-- This software may contain bugs or produce incorrect results
-
-**Use this software only for learning, research, and testing purposes. Never risk money you cannot afford to lose.**
-
-## Features
-
-- **Technical Indicators**: Moving averages (SMA, EMA, WMA), MACD, aggregation, and more
-- **Data Providers**: Mock data provider for testing, with extensible provider system
-- **CLI Tool**: Command-line interface for project management, data filling, strategy training, and execution
-- **Time Series Processing**: Efficient time series data structures and operations
-- **Extensible Architecture**: Plugin-based system for indicators, providers, brokers, and strategies
-
-## Installation
+## Install
 
 ```bash
 go get github.com/rangertaha/gotal
 ```
 
-## Quick Start
+## Package layout
 
-### Using Indicators
+| Import path | Purpose |
+| --- | --- |
+| `github.com/rangertaha/gotal` | Public interfaces (`TimeSeries`, `Tick`, `Stream`, `Indicator`, `Plot`, `Fields`, `Tags`, `Vector`) and the batch indicator vars (`EMA`, `SMA`, …). |
+| `github.com/rangertaha/gotal/ticker` | `*ticker.Ticker` — concrete `TimeSeries` implementation with `Print`, `Save`, `Plot` methods. |
+| `github.com/rangertaha/gotal/stream` | `*stream.Stream` — channel-backed live pipeline, plus `stream.Apply` and stream-mode indicator wrappers. |
+| `github.com/rangertaha/gotal/io` | Readers: `io.CSV`, `io.JSON`, `io.JSONL`, plus `io.Read(path)` that dispatches by extension. |
 
-```go
-package main
+## Quick start
 
-import (
-    "time"
-    ind "github.com/rangertaha/gotal/pkg/indicators"
-    "github.com/rangertaha/gotal/examples"
-)
-
-func main() {
-    // Create a price series
-    prices := examples.PricesSeries(1000, time.Second)
-    
-    // Convert to OHLCV
-    ohlcv := ind.OHLCV(prices, ind.WithPeriod(25), ind.OnField("price"))
-    
-    // Calculate Simple Moving Average
-    sma := ind.SMA(ohlcv, ind.WithPeriod(20), ind.OnField("close"))
-    sma.Print()
-    
-    // Calculate MACD
-    macd := ind.MACD(ohlcv,
-        ind.OnField("close"),
-        ind.WithFastPeriod(12),
-        ind.WithSlowPeriod(26),
-        ind.WithSignalPeriod(9),
-    )
-    macd.Print()
-}
-```
-
-### Using Data Providers
+### Batch: compute EMA over a CSV
 
 ```go
 package main
 
 import (
-    "time"
-    "github.com/rangertaha/gotal/pkg/providers"
+    "log"
+
+    "github.com/rangertaha/gotal"
+    "github.com/rangertaha/gotal/io"
 )
 
 func main() {
-    ohlcv := providers.Mock(
-        providers.WithDataset("sine"),
-        providers.WithSymbol("BTC"),
-        providers.WithDuration(1*time.Minute),
-        providers.WithStartDate(time.Now().AddDate(-10, 0, 0)),
-        providers.WithEndDate(time.Now()),
+    ts, err := io.Read("prices.csv")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    ema, err := gotal.EMA(ts,
+        gotal.With("name", "ema"),
+        gotal.With("source", "close"),
+        gotal.With("period", 14),
     )
-    ohlcv.Print()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    ema.Print()
+    _ = ema.Save("ema.csv")
 }
 ```
 
-## CLI Usage
+Or use the typed convenience wrapper:
 
-```bash
-# Initialize a new project
-gota init
-
-# Create a new trading project
-gota new myproject
-
-# Fill data from provider
-gota fill -p polygon -d 1m -s 2025-01-01
-
-# Train a strategy
-gota train -s 2025-01-01 -e 2025-01-02
-
-# Test a strategy
-gota test -s 2025-01-01 -e 2025-01-02
+```go
+ema, _ := gotal.Ema(ts, 14, 0) // period=14, alpha=0 means default 2/(period+1)
 ```
 
-## Available Indicators
+### Streaming: pipe a live source through an indicator
 
-- **SMA** - Simple Moving Average
-- **EMA** - Exponential Moving Average
-- **WMA** - Weighted Moving Average
-- **MACD** - Moving Average Convergence Divergence
-- **OHLC/OHLCV** - Open, High, Low, Close (Volume) aggregation
+```go
+package main
+
+import (
+    "fmt"
+
+    "github.com/rangertaha/gotal/io"
+    "github.com/rangertaha/gotal/stream"
+)
+
+func main() {
+    src := io.CSV("prices.csv").Stream().(*stream.Stream)
+    out := stream.Ema(src, 14, 0)
+
+    for tick := range out.Ticks() {
+        signals, _ := tick.Signals()
+        fmt.Printf("%s ema=%.4f\n", tick.Time().Format("2006-01-02"), signals["ema"])
+    }
+}
+```
+
+### Build a Ticker manually
+
+```go
+import "github.com/rangertaha/gotal/ticker"
+
+t, _ := ticker.New("prices",
+    ticker.WithTags(map[string]string{"symbol": "BTC-USD"}),
+    ticker.WithTicks(ticks...),
+)
+```
+
+## Configuration
+
+Indicators accept functional options through `gotal.ConfigOption`. Construct them with `gotal.With(key, value)`:
+
+```go
+sma, _ := gotal.SMA(ts,
+    gotal.With("period", 20),
+    gotal.With("source", "close"),
+    gotal.With("name",   "sma_20"),
+)
+```
+
+Common keys:
+
+| Key | Type | Used by |
+| --- | --- | --- |
+| `name` | string | Output signal/field name |
+| `source` | string | Name of the input field to read from each tick (default `close`) |
+| `period` | int | Window length |
+| `alpha` | float | Smoothing factor (EMA) — 0 means default `2/(period+1)` |
+
+## Indicators
+
+Around 330 indicator ids are registered. Implemented today (each callable as `gotal.<NAME>` and most also have a typed convenience wrapper like `gotal.Ema(ts, 14, 0)`):
+
+| Group | Implemented |
+| --- | --- |
+| **Overlap** | SMA, EMA, WMA, DEMA, TEMA, TRIMA, MIDPOINT, MIDPRICE, BBANDS, HMA |
+| **Momentum** | MOM, ROC, ROCP, ROCR, ROCR100, WILLR, RSI, CCI, MACD, APO, PPO, CMO, TRIX, AROON, AROONOSC, STOCH, STOCHF, MFI |
+| **Volatility** | TRANGE, ATR, NATR |
+| **Volume** | OBV, AD, ADOSC, VWMA, VWAP |
+| **Price** | AVGPRICE, MEDPRICE, TYPPRICE, WCLPRICE, HLC3, OHLC4, HEIKINASHI |
+| **Statistic** | STDDEV, VARIANCE, LINEARREG, LINEARREG_SLOPE, LINEARREG_ANGLE, LINEARREG_INTERCEPT, TSF, BETA, CORREL |
+| **Math operators** | MAX, MIN, SUMWINDOW, ADD, SUB, MULT, DIV, MAXINDEX, MININDEX |
+| **Math transforms** | ACOS, ASIN, ATAN, COS, SIN, TAN, COSH, SINH, TANH, CEIL, FLOOR, EXP, LN, LOG10, SQRT |
+| **Signals** | RSISIGNAL, MFISIGNAL, CCISIGNAL, WILLRSIGNAL, MOMSIGNAL, ROCSIGNAL, TRIXSIGNAL, PPOSIGNAL, CMOSIGNAL, MACDSIGNAL_CROSS, STOCHSIGNAL |
+
+Unimplemented ids (T3, KAMA, MAMA, ADX family, all `CDL*` patterns, Hilbert transforms, …) are registered as stubs that return a clear `"not implemented"` error at call time. See [`NOTES.md`](NOTES.md) for the full catalogue and per-indicator status.
+
+### Group runners
+
+Apply every implemented indicator in a category at once:
+
+```go
+out := gotal.Momentum(ts)   // adds rsi, macd, stoch_k/d, aroon_up/down, mom, roc, …
+out  = gotal.Volume(ts)     // obv, ad, adosc, vwma, vwap
+out  = gotal.Signal(ts)     // every buy/sell/hold signal generator
+out  = gotal.RunAll(ts)     // everything — produces 80+ output fields
+```
 
 ## Examples
 
-See the `examples/` directory for detailed examples:
-- `examples/indicators/ma/` - Moving average examples
-- `examples/indicators/macd/` - MACD indicator example
-- `examples/strategy/macd/` - MACD trading strategy
+The [`examples/`](examples) directory contains runnable programs:
 
-## Documentation
+- `examples/indicators/<name>/` — one runnable program per implemented indicator (SMA, EMA, RSI, MACD, BBANDS, MFI, signals, …).
+- `examples/groups/<name>/` — one program per group runner (`overlap`, `momentum`, `volume`, `volatility`, `price`, `statistic`, `signal`, `all`, …).
+- `examples/readers/csv/` — read a CSV into a `Ticker` and print it.
+- `examples/stream/ema/` — pipe a CSV through a streaming EMA.
 
-- [GoDoc](http://godoc.org/github.com/rangertaha/gotal)
-- [PkgGoDev](https://pkg.go.dev/github.com/rangertaha/gotal)
+Run any of them with `go run ./examples/indicators/rsi`, etc.
 
+## Disclaimer
 
-
-## Risk Disclaimer & Legal Notice
-
-**TRADING DISCLAIMER**: This software and any associated documentation, examples, or strategies are provided for educational and informational purposes only. They do not constitute investment advice, financial advice, trading advice, or any other sort of advice. The use of this software does not guarantee profits, and trading/investing involves substantial risk of loss.
-
-**NO LIABILITY**: Under no circumstances shall the author(s), contributors, or distributors of this software be liable for any direct, indirect, incidental, special, consequential, or punitive damages that result from the use of, or inability to use, this software or any associated strategies, even if the author(s) have been advised of the possibility of such damages.
-
-**ASSUMPTION OF RISK**: By using this software, you acknowledge and agree that you have read this disclaimer, understand its contents, and assume all risks associated with the use of this software. You acknowledge that trading and investing carry inherent risks and that you may lose some or all of your invested capital.
-
-**INDEPENDENT RESEARCH**: Before making any trading or investment decisions, you should conduct your own research and analysis and/or consult with qualified financial professionals.
-
+This software is provided for **educational and research purposes only**. It is not financial advice. Trading and investing involve significant risk of loss — you can lose all of your invested capital, past performance does not guarantee future results, and this software is provided "AS IS" with no warranties. The author(s) accept no liability for any losses. Do your own research and consult qualified professionals before making investment decisions.
 
 ## License
 
-See [LICENSE](LICENSE) file for details.
+GPL-3.0-or-later. See [LICENSE](LICENSE).
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details.
-
+Issues and pull requests are welcome. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) if present.
 
 ## Author
 
-**Rangertaha** - [rangertaha@gmail.com](mailto:rangertaha@gmail.com)
+**Rangertaha** — [rangertaha@gmail.com](mailto:rangertaha@gmail.com)

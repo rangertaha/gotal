@@ -1,7 +1,6 @@
 package tick
 
 import (
-	"math"
 	"time"
 
 	"github.com/rangertaha/gotal/internal"
@@ -11,46 +10,57 @@ type IDFunc func(t *Tick) string
 
 // Tick represents a single market event, capturing the most granular form of market data.
 type Tick struct {
-	uuid      string             // The unique identifier for the tick
 	timestamp int64              // The time at which the tick was recorded
 	duration  time.Duration      // The duration of the tick, typically very short
 	fields    map[string]float64 // The numerical fields
-	idFunc    IDFunc
+	signals   map[string]float64 // The signals
+	tags      map[string]string  // The tags
 }
 
-func New(opts ...TickOptions) *Tick {
+// WithSignals returns a new Tick that wraps src and merges in the given signals.
+// The original tick's fields/signals/tags are preserved (signals override on key collisions).
+func WithSignals(src internal.Tick, signals map[string]float64) *Tick {
+	if src == nil {
+		return nil
+	}
+	fields, _ := src.Fields()
+	tags, _ := src.Tags()
+	existing, _ := src.Signals()
+
+	mergedSignals := make(map[string]float64, len(existing)+len(signals))
+	for k, v := range existing {
+		mergedSignals[k] = v
+	}
+	for k, v := range signals {
+		mergedSignals[k] = v
+	}
+
+	clonedFields := make(map[string]float64, len(fields))
+	for k, v := range fields {
+		clonedFields[k] = v
+	}
+	clonedTags := make(map[string]string, len(tags))
+	for k, v := range tags {
+		clonedTags[k] = v
+	}
+
+	return NewTick(src.Time(), src.Duration(), clonedFields, mergedSignals, clonedTags)
+}
+
+func NewTick(timestamp time.Time, duration time.Duration, fields map[string]float64, signals map[string]float64, tags map[string]string) *Tick {
+	// Truncate the timestamp to the duration
+	if duration > 0 {
+		timestamp = timestamp.Truncate(duration)
+	}
+
 	tick := &Tick{
-		uuid:      "",
-		timestamp: time.Now().Unix(),
-		duration:  0,
-		fields:    map[string]float64{},
-		idFunc:    nil,
+		timestamp: timestamp.Unix(),
+		duration:  duration,
+		fields:    fields,
+		signals:   signals,
+		tags:      tags,
 	}
-	for _, opt := range opts {
-		opt(tick)
-	}
-
-	if tick.idFunc == nil {
-		tick.SetIDFunc(func(t *Tick) string {
-			return t.uuid
-		})
-	}
-
-	tick.SetID(tick.idFunc(tick))
-
 	return tick
-}
-
-func (t *Tick) ID() string {
-	return t.uuid
-}
-
-func (t *Tick) SetID(id string) {
-	t.uuid = id
-}
-
-func (t *Tick) SetIDFunc(idFunc IDFunc) {
-	t.idFunc = idFunc
 }
 
 func (t *Tick) Time() time.Time {
@@ -61,155 +71,51 @@ func (t *Tick) Epock() int64 {
 	return t.timestamp
 }
 
-func (t *Tick) SetEpock(epock int64) {
-	t.timestamp = epock
-}
-
-func (t *Tick) SetTime(timestamp time.Time) {
-	t.timestamp = timestamp.Unix()
-
-	// Truncate the timestamp to the duration
-	if t.duration > 0 {
-		// Get the timestamp as a time.Time
-		timestamp := time.Unix(t.timestamp, 0)
-
-		// Truncate the timestamp to the duration
-		t.timestamp = timestamp.Truncate(t.duration).Unix()
-	}
-}
-
 func (t *Tick) Duration() time.Duration {
 	return t.duration
 }
 
-func (t *Tick) SetDuration(duration time.Duration) {
-	t.duration = duration
-
-	// Truncate the timestamp to the duration
-	if t.duration > 0 {
-		// Get the timestamp as a time.Time
-		timestamp := time.Unix(t.timestamp, 0)
-
-		// Truncate the timestamp to the duration
-		t.timestamp = timestamp.Truncate(t.duration).Unix()
+func (t *Tick) Fields(names ...string) (fields map[string]float64, ok bool) {
+	if len(names) == 0 {
+		return t.fields, true
 	}
-}
-
-// Field methods
-// ------------------------------------------------------------
-
-func (t *Tick) Fields() map[string]float64 {
-	return t.fields
-}
-
-func (t *Tick) GetField(key string) float64 {
-	if val, ok := t.fields[key]; ok {
-		return val
-	}
-	return math.NaN()
-}
-
-func (t *Tick) SetField(key string, value float64) {
-	t.fields[key] = value
-}
-
-func (t *Tick) SetFields(fields map[string]float64) {
-	t.fields = fields
-}
-
-func (t *Tick) HasField(key string) bool {
-	_, ok := t.fields[key]
-	return ok
-}
-
-func (t *Tick) HasFields(keys ...string) bool {
-	for _, key := range keys {
-		if !t.HasField(key) {
-			return false
+	fields = make(map[string]float64)
+	for _, name := range names {
+		if val, ok := t.fields[name]; ok {
+			fields[name] = val
+		} else {
+			return fields, false
 		}
 	}
-	return true
+	return fields, true
 }
 
-func (t *Tick) RemoveField(key string) {
-	delete(t.fields, key)
-}
-
-func (t *Tick) FieldNames() []string {
-	keys := make([]string, 0, len(t.fields))
-	for k := range t.fields {
-		keys = append(keys, k)
+func (t *Tick) Signals(names ...string) (signals map[string]float64, ok bool) {
+	if len(names) == 0 {
+		return t.signals, true
 	}
-	return keys
+	signals = make(map[string]float64)
+	for _, name := range names {
+		if val, ok := t.signals[name]; ok {
+			signals[name] = val
+		} else {
+			return signals, false
+		}
+	}
+	return signals, true
 }
 
-func (t *Tick) Len() int {
-	return len(t.fields)
-}
-
-func (t *Tick) IsEmpty() bool {
-	if t == nil || t.fields == nil {
-		return true
+func (t *Tick) Tags(names ...string) (tags map[string]string, ok bool) {
+	if len(names) == 0 {
+		return t.tags, true
 	}
-	return len(t.fields) == 0
-}
-
-func (t *Tick) Reset() {
-	t.fields = map[string]float64{}
-}
-
-func (t *Tick) ForEach(fn func(key string, value float64) float64) {
-	for k, v := range t.fields {
-		t.fields[k] = fn(k, v)
+	tags = make(map[string]string)
+	for _, name := range names {
+		if val, ok := t.tags[name]; ok {
+			tags[name] = val
+		} else {
+			return tags, false
+		}
 	}
-}
-
-// Tag methods
-// ------------------------------------------------------------
-
-// Other methods
-// ------------------------------------------------------------
-
-func (t *Tick) Clone() *Tick {
-	clone := make(map[string]float64)
-	for k, v := range t.fields {
-		clone[k] = v
-	}
-	return &Tick{
-		fields:    clone,
-		uuid:      t.uuid,
-		timestamp: t.timestamp,
-		duration:  t.duration,
-	}
-}
-
-func (t *Tick) Update(other internal.Tick) internal.Tick {
-	for k, v := range other.Fields() {
-		t.fields[k] = v
-	}
-	t.SetEpock(other.Epock())
-	t.SetDuration(other.Duration())
-	t.SetID(other.ID())
-	// t.SetIDFunc(other.IDFunc())
-
-	// update the uuid
-	// t.SetID(t.idFunc(t))
-
-	return t
-}
-
-func (t *Tick) Spawn(opts ...TickOptions) *Tick {
-	tick := &Tick{
-		uuid:      t.uuid,
-		timestamp: t.Time().Add(t.duration).Unix(),
-		duration:  t.duration,
-		fields:    map[string]float64{},
-		idFunc:    t.idFunc,
-	}
-	for _, opt := range opts {
-		opt(tick)
-	}
-	tick.SetID(tick.idFunc(tick))
-
-	return tick
+	return tags, true
 }

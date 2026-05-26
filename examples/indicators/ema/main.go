@@ -1,28 +1,31 @@
+// Example: compute EMA over a batch CSV of prices.
 package main
 
 import (
 	"log"
 
 	"github.com/rangertaha/gotal"
-	"github.com/rangertaha/gotal/internal/series"
+	"github.com/rangertaha/gotal/io"
 )
 
 func main() {
-	input := series.New("price")
-	ema, err := gotal.EMA(input)
+	ts, err := io.Read("prices.csv")
 	if err != nil {
 		log.Fatal(err)
-	} 
+	}
 
-	// print the ema series to the console
+	ema, err := gotal.EMA(ts,
+		gotal.With("name", "ema"),
+		gotal.With("source", "close"),
+		gotal.With("period", 5),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ema.Print()
 
-	// save the ema series to a csv file
-	ema.Save("ema.csv")
-
-	// plot the ema series
-	plot := ema.Plot()
-
-	// save the plot to a png file
-	plot.Save("ema.png", 800, 600)
+	if err := ema.Save("ema.csv"); err != nil {
+		log.Fatal(err)
+	}
 }
